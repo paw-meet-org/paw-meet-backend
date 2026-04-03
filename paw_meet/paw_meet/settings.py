@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
+
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -169,7 +171,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-AUTH_USER_MODEL = '' # TODO
+AUTH_USER_MODEL = 'users.User' # TODO
 
 SITE_ID = 1
 

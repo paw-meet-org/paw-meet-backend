@@ -1,25 +1,55 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
-from django.db import transaction
 
 class Ciudad(models.Model):
-    pass
-
-class User(AbstractUser):
-
-    username = models.CharField(_('Username'), max_length = 100, null = False, blank = False) # blank hace referencia al formulario, obligatoriedad de campo o no, null es DB
-    password = models.CharField(_('Password'), max_length = 12, null = False, blank = False)
-    email = models.EmailField(unique = True, null = False, blank = False)
-    biography = models.CharField(_('Biography'), max_length = 300, null = True, blank = True)
-    foto = models.FileField(upload_to = 'media/')
-
-    ciudad = models.ForeignKey(Ciudad, on_delete = models.SET_NULL, null = True, blank = True, related_query_name = _("Ubicado en ciudad"))
-
-    class Meta:
-        verbose_name = _("user")
-        verbose_name_plural = _("users")
+    nombre = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.username} {self.email}" if self.email else self.username
+        return self.nombre
+
+
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    biography = models.CharField(max_length=300, blank=True, null=True)
+    foto = models.FileField(upload_to='users/', null=True, blank=True)
+
+    ciudad = models.ForeignKey(
+        Ciudad,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="usuarios"
+    )
+
+    def __str__(self):
+        return self.username
+
+
+class TipoMascota(models.Model):
+    nombre = models.CharField(max_length=200)
+    codigo = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.nombre} - {self.codigo}"
+
+
+class Mascota(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.CharField(max_length=300, blank=True, null=True)
+    foto = models.FileField(upload_to='mascotas/', null=True, blank=True)
+
+    tipo_mascota = models.ForeignKey(
+        TipoMascota,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="mascotas"
+    )
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="mascotas"
+    )
+
+    def __str__(self):
+        return self.nombre
