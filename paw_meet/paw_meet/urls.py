@@ -22,10 +22,11 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from django.conf import settings
 
 urlpatterns = [
-    path('api/', include('rest_framework.urls')),
+    path('api/auth-rest/', include('rest_framework.urls')),
     path('api/schema', SpectacularAPIView.as_view(), name = 'docs'),
     path('api/docs/', SpectacularRedocView.as_view(url_name = 'schema'), name = 'redoc'),
     path('admin/', admin.site.urls),
+    path('api/', include('users.urls')),
 ]
 
 urlpatterns += [

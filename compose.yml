@@ -34,7 +34,7 @@ services:
     env_file:
       - ./paw_meet/.env
     depends_on:
-      - pawmeet_db
+      - postgres
     ports:
       - "8003:8000"
     expose:
