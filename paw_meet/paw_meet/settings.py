@@ -14,6 +14,7 @@ import decouple
 from pathlib import Path
 from django.conf.locale.es import formats as es_formats
 from django.utils.translation import gettext_lazy as _
+from datetime import timedelta
 import os
 
 
@@ -48,7 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'drf_spectacular',
 
     'users',
@@ -134,6 +135,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours = 1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days = 1)
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -185,8 +191,8 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
