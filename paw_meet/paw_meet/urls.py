@@ -23,13 +23,10 @@ from django.conf import settings
 from rest_framework_simplejwt import views as jwt_views
 
 urlpatterns = [
-    path('api/auth-rest/', include('rest_framework.urls')),
-    path('api/schema', SpectacularAPIView.as_view(), name = 'docs'),
+    path('api/schema', SpectacularAPIView.as_view(), name = 'schema'),
     path('api/docs/', SpectacularRedocView.as_view(url_name = 'schema'), name = 'redoc'),
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
-    path('api/token', jwt_views.TokenObtainPairView.as_view(), name = 'toke_obtain_pair'),
-    path('api/token/refresh', jwt_views.TokenRefreshView.as_view(), name = 'token_refresh')
 ]
 
 urlpatterns += [
