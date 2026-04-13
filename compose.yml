@@ -37,6 +37,8 @@ services:
       - postgres
     ports:
       - "8003:8000"
+    profiles:
+      - app
     expose:
       - 8000
 
