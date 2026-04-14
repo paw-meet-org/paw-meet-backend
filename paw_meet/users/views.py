@@ -13,7 +13,7 @@ from .serializers.user_serializer import (
     ChangePasswordSerializer,
     PetSerializer,
 )
-from .permissions import IsOwnerOrAdmin, IsOwnerOrReadOnly
+from common.permissions import IsOwnerOrAdmin, IsOwnerOrReadOnly
 
 
 # ──────────────────────────────────────────────

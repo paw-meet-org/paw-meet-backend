@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, ProhibitNullCharactersValidator
 
 from common.models import BaseModel
 from .managers import CustomUserManager
@@ -63,8 +63,8 @@ class CustomUser(AbstractUser, BaseModel):
     REQUIRED_FIELDS = ['username']
 
     class Meta:
-        verbose_name = 'Usuario',
-        verbose_name_plural = 'Usuarios',
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
 
     objects = CustomUserManager()
 
@@ -84,6 +84,41 @@ class CustomUser(AbstractUser, BaseModel):
         return f"{self.first_name} {self.last_name}".strip() or self.username
 
 
+class PetType(BaseModel):
+    """
+    Tipo de mascota asociada a una mascota.
+
+    Relación: Un tipo de mascota puede estar asociada a MUCHAS mascotas (one-to-many).
+    Una mascota pertenece a un único tipo de mascota registrado.
+    """
+
+    nombre = models.CharField(
+        max_length = 100,
+        blank = False,
+        default = ''
+    )
+
+    codigo = models.CharField(
+        max_length = 8,
+        blank = False,
+        default = '',
+        validators = [ProhibitNullCharactersValidator]
+    )
+
+    class Meta:
+        verbose_name = 'pet_type'
+        verbose_name_plural = 'pets_type'
+        ordering = ['-codigo']
+        constraints = [
+            models.UniqueConstraint(
+                fields = ['nombre', 'codigo'],
+                name = 'unique_pet_types'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.nombre} - {self.codigo}"
+
 class Pet(BaseModel):
     """
     Mascota asociada a un usuario.
@@ -91,15 +126,6 @@ class Pet(BaseModel):
     Relación: Un usuario puede tener MUCHAS mascotas (one-to-many).
     Una mascota pertenece a UN único usuario registrado.
     """
-
-    class PetType(models.TextChoices):
-        DOG = 'dog', 'Perro'
-        CAT = 'cat', 'Gato'
-        RABBIT = 'rabbit', 'Conejo'
-        BIRD = 'bird', 'Pájaro'
-        REPTILE = 'reptile', 'Reptil'
-        RODENT = 'rodent', 'Roedor'
-        OTHER = 'other', 'Otro'
 
     class Size(models.TextChoices):
         SMALL = 'small', 'Pequeño (< 10kg)'
@@ -115,10 +141,11 @@ class Pet(BaseModel):
 
     name = models.CharField(max_length=100)
 
-    pet_type = models.CharField(
-        max_length=20,
-        choices=PetType.choices,
-        default=PetType.DOG,
+    pet_type = models.ForeignKey(
+        'users.PetType',
+        on_delete = models.CASCADE,
+        related_name = 'pets_type', # A la hora de consultar a la base de datos la asociación de ambos, en vez de usar mascota.pet_type_set (default) usas mascota.pets_type
+        help_text = "Tipo de mascota registrada."
     )
 
     # Sólo relevante si pet_type == OTHER. Permite especificar especie libre.
@@ -182,7 +209,7 @@ class Pet(BaseModel):
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.get_pet_type_display()}) — {self.owner.email}"
+        return f"{self.name} ({self.pet_type}) — {self.owner.email}"
 
     @property
     def age_years(self) -> int | None:

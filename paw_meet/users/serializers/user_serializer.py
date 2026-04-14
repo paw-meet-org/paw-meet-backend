@@ -47,7 +47,8 @@ class PetPublicSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Pet
-        fields = ['id', 'name', 'pet_type', 'species', 'breed', 'size', 'avatar']
+        fields = ['name', 'pet_type', 'species', 'breed', 'size', 'avatar']
+        read_only_fields = ['id']
 
 
 # ──────────────────────────────────────────────

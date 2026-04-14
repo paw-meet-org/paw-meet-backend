@@ -26,22 +26,35 @@ services:
       - postgres
 
   pawmeet:
-    build: .
     container_name: django_pawmeet
     restart: always
-    volumes:
+    volumes: 
       - ./paw_meet:/app
     env_file:
       - ./paw_meet/.env
     depends_on:
       - postgres
-    ports:
+    ports: 
       - "8003:8000"
+
+
+  pawmeet_develop:
+    build: .
+    container_name: django_pawmeet_develop
+    restart: always
+    volumes:
+      - ./paw_meet_develop:/app
+    env_file:
+      - ./paw_meet/.env
+    depends_on:
+      - postgres
+    ports:
+      - "8004:8000"
     profiles:
-      - app
+      - desarrollo
     expose:
       - 8000
 
 volumes:
   postgres_data:
-  pgadmin_data:  
+  pgadmin_data: 
