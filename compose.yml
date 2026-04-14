@@ -26,6 +26,7 @@ services:
       - postgres
 
   pawmeet:
+    image: mendo1/paw_meet_backend:1.0
     container_name: django_pawmeet
     restart: always
     volumes: 
