@@ -17,6 +17,17 @@ from django.utils.translation import gettext_lazy as _
 from datetime import timedelta
 import os
 
+CELERY_BROKER_URL = 'amqp://paw_meet:paw_meet@rabbitmq:5672//'
+
+CELERY_CACHE_BACKEND = 'default'
+
+# Serialización
+CELERY_ACCEPT_CONTENT   = ['json']
+CELERY_TASK_SERIALIZER  = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_TIMEZONE = 'Europe/Madrid'
+CELERY_ENABLE_UTC = True
 
 # Formatos de conversión y entradas sobre fechas
 es_formats.DATETIME_FORMAT = "d M Y H:i"
@@ -54,6 +65,8 @@ INSTALLED_APPS = [
 
     'users',
     'encuentros',
+    'django_celery_results',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [

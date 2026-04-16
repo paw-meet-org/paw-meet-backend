@@ -39,7 +39,6 @@ class AsistenciaSerialzer(serializers.ModelSerializer):
         encuentro_formulario = attrs.get('encuentro')
         estado = attrs.get('estado')
         contador_usuarios = attrs.get('contador_usuarios', 0)
-        contador_mascotas = attrs.get('contador_mascotas', 0)
 
         # Valida la existencia del encuentro asociado a la asistencia
         if not encuentro_formulario:

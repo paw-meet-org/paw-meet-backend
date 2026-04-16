@@ -11,12 +11,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libc-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt /app/
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./paw_meet/ /app/
 
-COPY entrypoint.sh .
+COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x entrypoint.sh
 
-CMD ["./entrypoint.sh"]
+CMD ["/app/entrypoint.sh"]
