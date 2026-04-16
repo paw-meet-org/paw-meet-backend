@@ -1,10 +1,13 @@
 from django.db import models
 from common.models import BaseModel
 from django.core.validators import MaxValueValidator
+from django.utils import timezone
 
 class Estado(models.TextChoices):
         BORRADOR = 'borrador', 'Borrador'
         CONFIRMADO = 'publicado', 'Publicado'
+        FINALIZADO = 'finalizado', 'Finalizado'
+        PROGRAMADO = 'programado', 'Programado'
         ELIMINADO = 'eliminado', 'Eliminado'
 
 class Asistencia(BaseModel):
@@ -99,6 +102,11 @@ class Encuentro(BaseModel):
             message = "No puede durar el encuentro más de 2 horas"
         )],
         help_text = "Número de minutos que va a durar el encuentro.º"
+    )
+
+    fecha_realizacion = models.DateTimeField(
+        default = timezone.now,
+        null = False
     )
 
     descripcion = models.CharField(

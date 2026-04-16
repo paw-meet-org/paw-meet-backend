@@ -30,13 +30,16 @@ services:
     container_name: django_pawmeet
     restart: always
     volumes: 
-      - ./paw_meet:/app
+      - ./paw_meet:/app/paw_meet
     env_file:
       - ./paw_meet/.env
     depends_on:
       - postgres
+    profiles:
+      - produccion
     ports: 
       - "8003:8000"
+    working_dir: /app/paw_meet
 
   rabbitmq:
     image: rabbitmq:latest
@@ -75,7 +78,7 @@ services:
     container_name: django_pawmeet_develop
     restart: always
     volumes:
-      - ./paw_meet_develop:/app
+      - ./paw_meet:/app/paw_meet
     env_file:
       - ./paw_meet/.env
     depends_on:
@@ -86,6 +89,8 @@ services:
       - desarrollo
     expose:
       - 8000
+    working_dir: /app/paw_meet 
+    command: python manage.py runserver 0.0.0.0:8000
 
 configs:
   rabbitmq-plugins:
