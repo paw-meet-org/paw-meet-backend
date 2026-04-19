@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
+from .router import root_router
 
 from .views import (
     RegisterView,
@@ -30,4 +31,8 @@ urlpatterns = [
 
     # ── Mascotas (router) ─────────────────────
     path('users/', include(router.urls)), # Genera: /users/me/pets/, /users/me/pets/<id>/, /users/me/pets/<id>/restore/
+
+    # ── Tipo Mascotas (router) ─────────────────────
+    path('', include(root_router.urls))
+
 ]

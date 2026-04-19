@@ -43,15 +43,23 @@ def generic_estado_change(self, tipo : str):
                 objetos_actualizados += 1
 
     return {
-            'status' : 'SUCCESS',
-            'objetos_actualizados' : objetos_actualizados
+        'status' : 'SUCCESS',
+        'objetos_actualizados' : objetos_actualizados
     }
 
 @shared_task(name = 'encuentros.tasks.actualizar_estado_eliminado', bind = True, max_retires = 2)
 @transaction.atomic
 def actualizar_estado_eliminado_task(self):
-    generic_estado_change(tipo = 'finalizado')
+    try:
+        generic_estado_change(tipo = 'finalizado')
+    except Exception as e:
+        logger.error(f'Error actualizando el estado a eliminado de un encuentro: {e}')
+        raise self.retry(exc=e, countdown=60)
     
 @shared_task(name = 'encuentros.tasks.registrar_encuentros_programados', bind = True, max_retries = 2)
 def registrar_encuentros_programados_task(self):
-    generic_estado_change(tipo = 'pendiente')
+    try:
+        generic_estado_change(tipo = 'pendiente')
+    except Exception as e:
+        logger.error(f'Error actualizando el estado programado : {e}')
+        raise self.retry(exc=e, countdown=60)

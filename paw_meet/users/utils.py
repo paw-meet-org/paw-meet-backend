@@ -1,4 +1,5 @@
 from rest_framework import serializers
+import re
 import os
 
 def validate_password_strength(value):

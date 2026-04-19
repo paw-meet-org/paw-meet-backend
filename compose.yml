@@ -29,8 +29,6 @@ services:
     image: mendo1/paw_meet_backend:1.0
     container_name: django_pawmeet
     restart: always
-    volumes: 
-      - ./paw_meet:/app/paw_meet
     env_file:
       - ./paw_meet/.env
     depends_on:
@@ -39,7 +37,6 @@ services:
       - produccion
     ports: 
       - "8003:8000"
-    working_dir: /app/paw_meet
 
   rabbitmq:
     image: rabbitmq:latest

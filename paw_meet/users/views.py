@@ -4,6 +4,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema
+from .services.user_service import UserService
+
 
 from .models import CustomUser, Pet
 from .serializers.user_serializer import (
@@ -11,9 +14,12 @@ from .serializers.user_serializer import (
     UserProfileSerializer,
     UserPublicSerializer,
     ChangePasswordSerializer,
-    PetSerializer,
 )
-from common.permissions import IsOwnerOrAdmin, IsOwnerOrReadOnly
+from .serializers.mascota_serializer import (
+    PetSerializer, 
+    PetTypeSerializer
+)
+from common.permissions import IsOwnerOrAdmin, IsAppAdmin
 
 
 # ──────────────────────────────────────────────
@@ -109,7 +115,6 @@ class ChangePasswordView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        from .services import UserService
         try:
             UserService.change_password(
                 user=request.user,
@@ -144,6 +149,7 @@ class UserPublicProfileView(generics.RetrieveAPIView):
 # PETS
 # ──────────────────────────────────────────────
 
+@extend_schema(tags = ['pets'])
 class PetViewSet(viewsets.ModelViewSet):
     """
     ViewSet completo para mascotas del usuario autenticado.
@@ -196,3 +202,22 @@ class PetViewSet(viewsets.ModelViewSet):
         pet.is_active = True
         pet.save(update_fields=['is_active', 'updated_at'])
         return Response(self.get_serializer(pet).data)
+    
+# ──────────────────────────────────────────────
+# PETS TYPE
+# ──────────────────────────────────────────────
+
+@extend_schema(tags = ['pet-type'])
+class PetTypeViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet completo sobre tipos de mascota para administradores.
+
+    GET    /api/pettypes/          → lista los tipos de mascota registrados
+    POST   /api/pettypes/          → crear tipo de mascota
+    GET    /api/pettypes/<id>/     → detalle
+    PATCH  /api/pettypes/<id>/     → editar parcial
+    DELETE /api/pettypes/<id>/     → eliminar
+    """
+    serializer_class = PetTypeSerializer
+    permission_classes = [IsAuthenticated, IsAppAdmin]
+

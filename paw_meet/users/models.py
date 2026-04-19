@@ -95,13 +95,13 @@ class PetType(BaseModel):
     nombre = models.CharField(
         max_length = 100,
         blank = False,
-        default = ''
+        default = 'Beagle'
     )
 
     codigo = models.CharField(
         max_length = 8,
         blank = False,
-        default = '',
+        default = 'PERROS',
         validators = [ProhibitNullCharactersValidator]
     )
 
