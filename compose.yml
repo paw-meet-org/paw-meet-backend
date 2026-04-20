@@ -55,6 +55,22 @@ services:
       - rabbitmq-lib:/var/lib/rabbitmq/
       - rabbitmq-log:/var/log/rabbitmq
   
+  beat:
+    build: .
+    container_name: celery_beat
+    command: python -m celery -A paw_meet beat --loglevel=info
+    restart: always
+    env_file:
+      - ./paw_meet/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=paw_meet.settings
+      - CELERY_BROKER_URL=amqp://paw_meet:paw_meet@rabbitmq:5672//
+      - PYTHONPATH=/app
+    depends_on:
+      - postgres
+      - rabbitmq
+      - worker
+      
   worker:
     build: .
     container_name: celery_worker

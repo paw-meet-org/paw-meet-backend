@@ -15,7 +15,12 @@ from pathlib import Path
 from django.conf.locale.es import formats as es_formats
 from django.utils.translation import gettext_lazy as _
 from datetime import timedelta
+from celery.schedules import crontab
 import os
+
+# ___________________________________
+# CELERY
+# ___________________________________
 
 CELERY_BROKER_URL = 'amqp://paw_meet:paw_meet@rabbitmq:5672//'
 
@@ -26,6 +31,18 @@ CELERY_ACCEPT_CONTENT   = ['json']
 CELERY_TASK_SERIALIZER  = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
+# Configuración programada de las tareas a ejecutar por CELERY
+CELERY_BEAT_SCHEDULE = {
+    'actualizar_estado_eliminado' : {
+        'task' : 'encuentros.tasks.actualizar_estado_eliminado',
+        'schedule' : crontab(minute = '*/15')
+    },
+    'actualizar_encuentros_programados' : {
+        'task' : 'encuentros.tasks.actualizar_encuentros_programados',
+        'schedule' : crontab(minute = '*/15')
+    }
+}
+
 CELERY_TIMEZONE = 'Europe/Madrid'
 CELERY_ENABLE_UTC = True
 
@@ -34,6 +51,17 @@ es_formats.DATETIME_FORMAT = "d M Y H:i"
 es_formats.DATE_FORMAT = "d/m/Y"
 es_formats.DATE_INPUT_FORMATS = ["%d/%m/%Y",]
 es_formats.DATETIME_INPUT_FORMATS = ["%d/%m/%Y %H:%M",]
+
+# ___________________________________
+# OUTLOOK - EMAIL
+# ___________________________________
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = decouple.config('EMAIL_PORT')
+EMAIL_USE_TLS = decouple.config('EMAIL_TLS')
+EMAIL_HOST_USER = decouple.config('EMAIL_USER')
+EMAIL_HOST_PASSWORD = decouple.config('EMAIL_PASSWORD')
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -66,7 +94,8 @@ INSTALLED_APPS = [
     'users',
     'encuentros',
     'django_celery_results',
-    'django_celery_beat'
+    'django_celery_beat',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
