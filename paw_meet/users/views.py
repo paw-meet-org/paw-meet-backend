@@ -22,6 +22,7 @@ from .serializers.mascota_serializer import (
 from common.permissions import IsOwnerOrAdmin, IsAppAdmin
 
 
+
 # ──────────────────────────────────────────────
 # AUTH
 # ──────────────────────────────────────────────

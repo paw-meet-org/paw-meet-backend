@@ -23,3 +23,4 @@ class PetAdmin(admin.ModelAdmin):
     list_filter = ['pet_type', 'size', 'is_active']
     search_fields = ['name', 'owner__email']
     raw_id_fields = ['owner']
+

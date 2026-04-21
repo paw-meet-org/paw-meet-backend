@@ -93,6 +93,7 @@ INSTALLED_APPS = [
 
     'users',
     'encuentros',
+    'foros',
     'django_celery_results',
     'django_celery_beat',
     'django_filters',

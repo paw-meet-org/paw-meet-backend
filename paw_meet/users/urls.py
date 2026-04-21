@@ -33,6 +33,10 @@ urlpatterns = [
     path('users/', include(router.urls)), # Genera: /users/me/pets/, /users/me/pets/<id>/, /users/me/pets/<id>/restore/
 
     # ── Tipo Mascotas (router) ─────────────────────
-    path('', include(root_router.urls))
+    path('', include(root_router.urls)),
+
+    # ── Foros ─────────────────────
+    path('api/', include('foros.urls'))
+
 
 ]
