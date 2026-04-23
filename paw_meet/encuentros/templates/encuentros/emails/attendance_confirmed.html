@@ -1,0 +1,34 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #333; margin-bottom: 20px;">¡Asistencia confirmada! 🎉</h2>
+
+<p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
+
+<p>Has confirmado tu asistencia al siguiente encuentro:</p>
+
+<div class="meeting-card">
+    <div class="meeting-title">{{ meeting.title }}</div>
+    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting.date|date:"l d \d\e F \d\e Y" }}</div>
+    <div class="meeting-detail">⏰ <strong>Hora:</strong> {{ meeting.start_time|time:"H:i" }} - {{ meeting.end_time|time:"H:i" }}</div>
+    <div class="meeting-detail">📍 <strong>Lugar:</strong> {{ meeting.location }}, {{ meeting.city.name }}</div>
+    {% if attendance.pets.exists %}
+    <div class="meeting-detail">🐕 <strong>Mascotas que asisten:</strong> 
+        {% for pet in attendance.pets.all %}{{ pet.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<p><strong>Plazas disponibles:</strong> {{ meeting.available_spots }} de {{ meeting.max_participants }}</p>
+
+<p>Puedes ver los detalles completos y contactar con otros asistentes a través de la aplicación.</p>
+
+<a href="{{ site_url }}/meetings/{{ meeting.id }}" class="button">Ver encuentro</a>
+
+<p style="margin-top: 20px;">
+    Si no puedes asistir, por favor <a href="{{ site_url }}/meetings/{{ meeting.id }}/leave" style="color: #667eea;">cancela tu asistencia</a> 
+    para liberar tu plaza.
+</p>
+
+<p>¡Nos vemos en el encuentro!</p>
+{% endblock %}

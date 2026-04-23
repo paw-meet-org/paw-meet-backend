@@ -1,0 +1,50 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #e74c3c; margin-bottom: 20px;">Asistencia cancelada</h2>
+
+<p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
+
+<p>Has cancelado tu asistencia al siguiente encuentro:</p>
+
+<div class="meeting-card" style="border-left-color: #e74c3c;">
+    <div class="meeting-title">{{ meeting.titulo }}</div>
+    <div class="meeting-detail">
+        <span class="icon">📅</span> 
+        <strong>Fecha:</strong> {{ meeting.fecha|date:"l d \d\e F \d\e Y" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">⏰</span> 
+        <strong>Hora:</strong> {{ meeting.hora_inicio|time:"H:i" }} - {{ meeting.hora_fin|time:"H:i" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">📍</span> 
+        <strong>Lugar:</strong> {{ meeting.ubicacion }}, {{ meeting.ciudad.nombre }}
+    </div>
+</div>
+
+<div style="background: #fef9e7; border: 1px solid #f9e79f; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #7d6608;">
+        <strong>ℹ️ Información importante:</strong><br>
+        Tu plaza ha sido liberada y está disponible para otros usuarios. 
+        Si cambias de opinión, puedes volver a unirte siempre que haya plazas disponibles.
+    </p>
+</div>
+
+<p>¿Fue un error? Todavía puedes volver a unirte al encuentro:</p>
+
+<a href="{{ site_url }}/encuentros/{{ meeting.id }}" class="button" style="background: #e74c3c;">
+    Ver encuentro y unirme de nuevo
+</a>
+
+<p style="margin-top: 20px; color: #7f8c8d; font-size: 14px;">
+    Si cancelaste por un cambio de planes, ¡no te preocupes! Habrá más oportunidades para encontrarnos.
+</p>
+
+<hr style="border: none; border-top: 1px solid #ecf0f1; margin: 25px 0;">
+
+<p style="color: #7f8c8d;">
+    <span class="icon">🐾</span> 
+    <em>¡Gracias por usar PawMeet para organizar tus encuentros con mascotas!</em>
+</p>
+{% endblock %}

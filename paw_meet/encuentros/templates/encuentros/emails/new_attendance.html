@@ -1,0 +1,81 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #3498db; margin-bottom: 20px;">🎉 ¡Nuevo asistente a tu encuentro!</h2>
+
+<p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
+
+<p><strong>{{ attendee.get_full_name|default:attendee.email }}</strong> se ha unido a tu encuentro:</p>
+
+<div class="meeting-card" style="border-left-color: #3498db;">
+    <div class="meeting-title">{{ meeting.titulo }}</div>
+    <div class="meeting-detail">📅 {{ meeting.fecha|date:"d/m/Y" }} · ⏰ {{ meeting.hora_inicio|time:"H:i" }}</div>
+    <div class="meeting-detail">📍 {{ meeting.ubicacion }}, {{ meeting.ciudad.nombre }}</div>
+</div>
+
+<div style="background: #ebf5fb; border: 1px solid #aed6f1; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0 0 10px 0; color: #21618c;">
+        <strong>📊 Estado actual del encuentro:</strong>
+    </p>
+    <ul style="margin: 0; padding-left: 20px; color: #21618c;">
+        <li><strong>Plazas ocupadas:</strong> {{ meeting.attendees.confirmadas.count }}</li>
+        <li><strong>Plazas disponibles:</strong> {{ meeting.available_spots }} de {{ meeting.max_participantes }}</li>
+        <li><strong>Porcentaje de ocupación:</strong> {{ meeting.attendees.confirmadas.count|floatformat:0 }}%</li>
+    </ul>
+</div>
+
+<div style="margin: 20px 0;">
+    <p><strong>🐕 Mascotas de {{ attendee.first_name|default:attendee.email }}:</strong></p>
+    {% if attendance.mascotas.exists %}
+    <ul style="margin: 0; padding-left: 20px;">
+        {% for mascota in attendance.mascotas.all %}
+        <li>{{ mascota.nombre }} ({{ mascota.tipo.nombre }})</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p style="color: #7f8c8d;"><em>No ha registrado mascotas para este encuentro</em></p>
+    {% endif %}
+    
+    {% if attendance.notas %}
+    <p style="margin-top: 15px;"><strong>📝 Notas del asistente:</strong><br>
+    "{{ attendance.notas }}"</p>
+    {% endif %}
+</div>
+
+<div style="display: flex; gap: 10px; margin: 25px 0;">
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}" class="button" style="background: #3498db; margin: 0;">
+        Ver encuentro
+    </a>
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}/asistentes" 
+       style="display: inline-block; background: #95a5a6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: 500;">
+        Ver todos los asistentes
+    </a>
+</div>
+
+{% if meeting.available_spots == 0 %}
+<div style="background: #fdedec; border: 1px solid #f1948a; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #922b21;">
+        <strong>🎯 ¡Encuentro completo!</strong><br>
+        Se ha alcanzado la capacidad máxima. Ya no se aceptarán más participantes.
+    </p>
+</div>
+{% elif meeting.available_spots <= 3 %}
+<div style="background: #fef9e7; border: 1px solid #f9e79f; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #7d6608;">
+        <strong>⚠️ ¡Quedan pocas plazas!</strong><br>
+        Solo quedan {{ meeting.available_spots }} plazas disponibles.
+    </p>
+</div>
+{% endif %}
+
+<p style="margin-top: 20px;">
+    Puedes contactar con los asistentes a través del chat del encuentro para coordinar detalles.
+</p>
+
+<hr style="border: none; border-top: 1px solid #ecf0f1; margin: 25px 0;">
+
+<p style="color: #7f8c8d; font-size: 14px;">
+    <span class="icon">🔔</span> 
+    <em>Recibirás un recordatorio 24 horas antes del encuentro.</em>
+</p>
+{% endblock %}

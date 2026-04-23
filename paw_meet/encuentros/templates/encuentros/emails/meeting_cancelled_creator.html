@@ -1,0 +1,29 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #c0392b; margin-bottom: 20px;">Has cancelado tu encuentro</h2>
+
+<p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
+
+<p>Has cancelado el siguiente encuentro que habías organizado:</p>
+
+<div class="meeting-card" style="border-left-color: #c0392b;">
+    <div class="meeting-title">{{ meeting.titulo }}</div>
+    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting.fecha|date:"l d \d\e F \d\e Y" }}</div>
+</div>
+
+<div style="background: #fadbd8; border: 1px solid #f1948a; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #922b21;">
+        <strong>✅ Acciones realizadas:</strong><br>
+        • El encuentro ha sido cancelado<br>
+        • Se ha notificado a {{ meeting.attendees.confirmadas.count }} asistentes<br>
+        • Todas las plazas han sido liberadas
+    </p>
+</div>
+
+<p>Si fue un error, puedes crear un nuevo encuentro cuando quieras:</p>
+
+<a href="{{ site_url }}/encuentros/crear" class="button" style="background: #27ae60;">
+    Crear nuevo encuentro
+</a>
+{% endblock %}

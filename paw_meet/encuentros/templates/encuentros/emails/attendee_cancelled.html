@@ -1,0 +1,31 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #e67e22; margin-bottom: 20px;">Un asistente ha cancelado</h2>
+
+<p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
+
+<p><strong>{{ attendee.get_full_name|default:attendee.email }}</strong> ha cancelado su asistencia a tu encuentro:</p>
+
+<div class="meeting-card" style="border-left-color: #e67e22;">
+    <div class="meeting-title">{{ meeting.titulo }}</div>
+    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting.fecha|date:"l d \d\e F \d\e Y" }}</div>
+    <div class="meeting-detail">⏰ <strong>Hora:</strong> {{ meeting.hora_inicio|time:"H:i" }} - {{ meeting.hora_fin|time:"H:i" }}</div>
+</div>
+
+<div style="background: #ebf5fb; border: 1px solid #aed6f1; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #21618c;">
+        <strong>📊 Estado actual del encuentro:</strong><br>
+        Plazas ocupadas: {{ meeting.attendees.confirmadas.count }}<br>
+        Plazas disponibles: {{ meeting.available_spots }} de {{ meeting.max_participantes }}
+    </p>
+</div>
+
+<a href="{{ site_url }}/encuentros/{{ meeting.id }}" class="button" style="background: #e67e22;">
+    Ver detalles del encuentro
+</a>
+
+<p style="margin-top: 20px;">
+    La plaza liberada ya está disponible para que otros usuarios puedan unirse.
+</p>
+{% endblock %}

@@ -1,5 +1,7 @@
 from rest_framework.routers import DefaultRouter
-from .views import EncuentroViewSet
+from .views import MeetingViewSet, AttendanceViewSet, CityViewSet
 
-encuentros_router = DefaultRouter()
-encuentros_router.register(r'encuentros', EncuentroViewSet, basename = 'encuentros')
+router = DefaultRouter()
+router.register(r'cities', CityViewSet, basename='city')
+router.register(r'attendances', AttendanceViewSet, basename='attendance')
+router.register(r'', MeetingViewSet, basename='meeting')

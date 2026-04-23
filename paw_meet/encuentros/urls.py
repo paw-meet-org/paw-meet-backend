@@ -1,6 +1,6 @@
 from django.urls import path, include
-from .router import encuentros_router
+from .router import router
 
 urlpatterns = [
-    path('', include(encuentros_router.urls))
+    path('', include(router.urls))
 ]

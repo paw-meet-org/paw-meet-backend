@@ -17,6 +17,7 @@ from django.utils.translation import gettext_lazy as _
 from datetime import timedelta
 from celery.schedules import crontab
 import os
+import sys
 
 # ___________________________________
 # CELERY
@@ -33,14 +34,14 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 # Configuración programada de las tareas a ejecutar por CELERY
 CELERY_BEAT_SCHEDULE = {
-    'actualizar_estado_eliminado' : {
-        'task' : 'encuentros.tasks.actualizar_estado_eliminado',
-        'schedule' : crontab(minute = '*/15')
+    'update-meeting-statuses': {
+        'task': 'encuentros.tasks.update_meeting_statuses_task',
+        'schedule': crontab(minute='*/15'),  # Cada 15 minutos
     },
-    'actualizar_encuentros_programados' : {
-        'task' : 'encuentros.tasks.actualizar_encuentros_programados',
-        'schedule' : crontab(minute = '*/15')
-    }
+    'schedule-meeting-reminders': {
+        'task': 'encuentros.tasks.schedule_meeting_reminders_task',
+        'schedule': crontab(hour=10, minute=0),  # Todos los días a las 10:00
+    },
 }
 
 CELERY_TIMEZONE = 'Europe/Madrid'
@@ -134,7 +135,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'paw_meet.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
@@ -260,6 +260,22 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'COMPONENT_SPLIT_REQUEST': True
 }
+
+# Tests
+# Configuración para tests
+if 'test' in sys.argv:
+    # Usar backend de email en memoria para pruebas
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    
+    # URL del frontend para pruebas
+    FRONTEND_URL = 'http://localhost:3000'
+    
+    # Desactivar throttling en pruebas
+    REST_FRAMEWORK = {
+        **REST_FRAMEWORK,
+        'DEFAULT_THROTTLE_CLASSES': [],
+        'DEFAULT_THROTTLE_RATES': {},
+    }
 
 CSRF_TRUSTED_ORIGINS = decouple.config('CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1, http://localhost', cast=lambda v: [s.strip() for s in v.split(',')])
 CORS_ALLOWED_ORIGINS = decouple.config('CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1, http://localhost', cast=lambda v: [s.strip() for s in v.split(',')])

@@ -1,0 +1,31 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #c0392b; margin-bottom: 20px;">Encuentro cancelado</h2>
+
+<p>Hola,</p>
+
+<p>Lamentamos informarte que el encuentro <strong>"{{ meeting_titulo }}"</strong> ha sido cancelado por el organizador.</p>
+
+<div class="meeting-card" style="border-left-color: #c0392b; opacity: 0.8;">
+    <div class="meeting-title">{{ meeting_titulo }}</div>
+    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting_fecha|date:"l d \d\e F \d\e Y" }}</div>
+</div>
+
+<div style="background: #fadbd8; border: 1px solid #f1948a; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #922b21;">
+        <span class="icon">😔</span> 
+        Sentimos las molestias que esto pueda ocasionar.
+    </p>
+</div>
+
+<p>¡No te desanimes! Hay muchos otros encuentros disponibles:</p>
+
+<a href="{{ site_url }}/encuentros" class="button" style="background: #3498db;">
+    Explorar otros encuentros
+</a>
+
+<p style="margin-top: 20px; color: #7f8c8d;">
+    Si tienes dudas, puedes contactar con el organizador o con nuestro equipo de soporte.
+</p>
+{% endblock %}

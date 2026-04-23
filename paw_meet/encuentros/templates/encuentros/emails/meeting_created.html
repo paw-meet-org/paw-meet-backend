@@ -1,0 +1,102 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #27ae60; margin-bottom: 20px;">¡Encuentro creado con éxito! 🎉</h2>
+
+<p>Hola <strong>{{ user_get_full_name|default:user_email }}</strong>,</p>
+
+<p>Has creado un nuevo encuentro en <strong>PawMeet</strong>. ¡Gracias por organizar esta quedada para la comunidad!</p>
+
+<div class="meeting-card" style="border-left-color: #27ae60;">
+    <div class="meeting-title">{{ meeting_title }}</div>
+    <div class="meeting-detail">
+        <span class="icon">📅</span> 
+        <strong>Fecha:</strong> {{ meeting_date|date:"l d \d\e F \d\e Y" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">⏰</span> 
+        <strong>Hora:</strong> {{ meeting_start_time|time:"H:i" }} - {{ meeting_end_time|time:"H:i" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">📍</span> 
+        <strong>Lugar:</strong> {{ meeting_location }}, {{ meeting_city }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">👥</span> 
+        <strong>Capacidad máxima:</strong> {{ meeting_max_capacity }} participantes
+    </div>
+    {% if meeting.mascotas.exists %}
+    <div class="meeting-detail">
+        <span class="icon">🐕</span> 
+        <strong>Tus mascotas que asistirán:</strong> 
+        {% for mascota in meeting_mascotas.all %}
+            {{ mascota }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<div style="background: #eafaf1; border: 1px solid #a9dfbf; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #1e8449;">
+        <strong>✅ ¡Todo listo!</strong><br>
+        Tu encuentro ya está publicado y visible para otros usuarios. 
+        Recibirás notificaciones cuando alguien confirme su asistencia.
+    </p>
+</div>
+
+<div style="margin: 25px 0;">
+    <p style="margin-bottom: 15px;"><strong>🔗 Comparte tu encuentro:</strong></p>
+    
+    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 12px; word-break: break-all;">
+        <code style="color: #495057; font-size: 14px;">{{ site_url }}/encuentros/{{ meeting.id }}</code>
+    </div>
+    
+    <p style="margin-top: 10px; font-size: 14px; color: #6c757d;">
+        Copia este enlace y compártelo con quien quieras invitar.
+    </p>
+</div>
+
+<div style="display: flex; gap: 10px; margin: 25px 0;">
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}" class="button" style="background: #27ae60; margin: 0;">
+        Ver mi encuentro
+    </a>
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}/editar" 
+       style="display: inline-block; background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: 500;">
+        Editar detalles
+    </a>
+</div>
+
+<div style="background: #f4f6f8; border-radius: 8px; padding: 20px; margin: 25px 0;">
+    <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px;">📋 Próximos pasos como organizador</h3>
+    
+    <ul style="margin: 0; padding-left: 20px; color: #34495e;">
+        <li style="margin-bottom: 10px;">
+            <strong>Gestiona las asistencias:</strong> Recibirás notificaciones cuando nuevos participantes se unan.
+        </li>
+        <li style="margin-bottom: 10px;">
+            <strong>Comunícate con los asistentes:</strong> Usa el chat del encuentro para coordinar detalles.
+        </li>
+        <li style="margin-bottom: 10px;">
+            <strong>Actualiza la información:</strong> Si hay cambios, puedes editar el encuentro y se notificará a los participantes.
+        </li>
+        <li style="margin-bottom: 10px;">
+            <strong>Cancela si es necesario:</strong> Si no puedes realizarlo, cancela con antelación para avisar a los asistentes.
+        </li>
+    </ul>
+</div>
+
+<div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #856404;">
+        <strong>⚠️ Recordatorio importante:</strong><br>
+        Como organizador, te recomendamos llegar unos minutos antes al punto de encuentro 
+        para recibir a los participantes. ¡La puntualidad es clave para una buena experiencia!
+    </p>
+</div>
+
+<hr style="border: none; border-top: 1px solid #ecf0f1; margin: 25px 0;">
+
+<p style="color: #7f8c8d;">
+    <span class="icon">🐾</span> 
+    <em>¡Gracias por hacer crecer la comunidad de PawMeet!</em>
+</p>
+{% endblock %}

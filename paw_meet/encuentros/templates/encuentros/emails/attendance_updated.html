@@ -1,0 +1,96 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #3498db; margin-bottom: 20px;">Asistencia actualizada</h2>
+
+<p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
+
+<p>Has actualizado los detalles de tu asistencia al siguiente encuentro:</p>
+
+<div class="meeting-card">
+    <div class="meeting-title">{{ meeting.titulo }}</div>
+    <div class="meeting-detail">
+        <span class="icon">📅</span> 
+        <strong>Fecha:</strong> {{ meeting.fecha|date:"l d \d\e F \d\e Y" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">⏰</span> 
+        <strong>Hora:</strong> {{ meeting.hora_inicio|time:"H:i" }} - {{ meeting.hora_fin|time:"H:i" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">📍</span> 
+        <strong>Lugar:</strong> {{ meeting.ubicacion }}, {{ meeting.ciudad.nombre }}
+    </div>
+</div>
+
+{% if changes %}
+<div style="background: #ebf5fb; border: 1px solid #aed6f1; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0 0 10px 0; color: #21618c;">
+        <strong>📝 Cambios realizados:</strong>
+    </p>
+    <ul style="margin: 0; padding-left: 20px; color: #2c3e50;">
+        {% for change in changes %}
+        <li style="margin-bottom: 5px;">{{ change }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div style="background: #f4f6f7; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0 0 10px 0; color: #2c3e50;">
+        <strong>🐕 Detalles actuales de tu asistencia:</strong>
+    </p>
+    <ul style="margin: 0; padding-left: 20px; color: #2c3e50;">
+        <li style="margin-bottom: 5px;">
+            <strong>Mascotas que asistirán:</strong> 
+            {% if attendance.mascotas.exists %}
+                {% for mascota in attendance.mascotas.all %}
+                    {{ mascota.nombre }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                <em>Ninguna mascota registrada</em>
+            {% endif %}
+        </li>
+        {% if attendance.notas %}
+        <li style="margin-bottom: 5px;">
+            <strong>Notas adicionales:</strong> {{ attendance.notas }}
+        </li>
+        {% endif %}
+        <li style="margin-bottom: 5px;">
+            <strong>Estado:</strong> 
+            {% if attendance.estado == 'confirmada' %}
+                <span style="color: #27ae60;">✓ Confirmada</span>
+            {% elif attendance.estado == 'pendiente' %}
+                <span style="color: #f39c12;">⏳ Pendiente</span>
+            {% else %}
+                {{ attendance.get_estado_display }}
+            {% endif %}
+        </li>
+    </ul>
+</div>
+
+<p>Puedes revisar todos los detalles del encuentro y ver quiénes más asistirán:</p>
+
+<a href="{{ site_url }}/encuentros/{{ meeting.id }}" class="button">
+    Ver encuentro completo
+</a>
+
+<div style="margin-top: 25px;">
+    <p style="margin-bottom: 10px;">
+        <strong>¿Necesitas hacer más cambios?</strong>
+    </p>
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}/mi-asistencia" 
+       style="display: inline-block; background: #95a5a6; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; margin-right: 10px;">
+        Editar mi asistencia
+    </a>
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}/cancelar-asistencia" 
+       style="display: inline-block; background: #e74c3c; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+        Cancelar asistencia
+    </a>
+</div>
+
+<p style="margin-top: 20px; color: #7f8c8d; font-size: 14px;">
+    <span class="icon">💡</span> 
+    <em>Recuerda que puedes actualizar los detalles de tu asistencia en cualquier momento antes del encuentro.</em>
+</p>
+{% endblock %}
