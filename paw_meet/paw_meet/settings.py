@@ -54,14 +54,17 @@ es_formats.DATE_INPUT_FORMATS = ["%d/%m/%Y",]
 es_formats.DATETIME_INPUT_FORMATS = ["%d/%m/%Y %H:%M",]
 
 # ___________________________________
-# OUTLOOK - EMAIL
+# OTP - EMAIL
 # ___________________________________
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'backend.email.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = decouple.config('EMAIL_PORT')
-EMAIL_USE_TLS = decouple.config('EMAIL_TLS')
+EMAIL_USE_TLS = True
 EMAIL_HOST_USER = decouple.config('EMAIL_USER')
 EMAIL_HOST_PASSWORD = decouple.config('EMAIL_PASSWORD')
+EMAIL_USE_SSL = False
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None 
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -95,6 +98,7 @@ INSTALLED_APPS = [
     'users',
     'encuentros',
     'foros',
+    'backend',
     'django_celery_results',
     'django_celery_beat',
     'django_filters',
@@ -228,8 +232,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 

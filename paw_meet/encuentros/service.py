@@ -5,7 +5,7 @@ from users.models import CustomUser
 from django.core.mail import send_mail, send_mass_mail
 from django.conf import settings
 from django.contrib import messages
-from .tasks import enviar_recordatorio
+from .tasks import send_meeting_reminder_task
 from django.utils import timezone
 
 class EncuentroService:
@@ -141,7 +141,7 @@ class NotificationService:
             diferencia = fecha - timezone.now()
 
             if (diferencia.days == 0) and (diferencia.total_seconds / 3600 <= 24):
-                enviar_recordatorio.delay(encuentro)
+                send_meeting_reminder_task.delay(encuentro.id)
                 return True
             
             return False
