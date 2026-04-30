@@ -35,11 +35,11 @@ CELERY_RESULT_SERIALIZER = 'json'
 # Configuración programada de las tareas a ejecutar por CELERY
 CELERY_BEAT_SCHEDULE = {
     'update-meeting-statuses': {
-        'task': 'encuentros.tasks.update_meeting_statuses_task',
+        'task': 'encuentros.tasks.update_meeting_statuses',
         'schedule': crontab(minute='*/15'),  # Cada 15 minutos
     },
     'schedule-meeting-reminders': {
-        'task': 'encuentros.tasks.schedule_meeting_reminders_task',
+        'task': 'encuentros.tasks.schedule_meeting_reminders',
         'schedule': crontab(hour=10, minute=0),  # Todos los días a las 10:00
     },
 }
@@ -66,6 +66,12 @@ EMAIL_USE_SSL = False
 EMAIL_SSL_CERTFILE = None
 EMAIL_SSL_KEYFILE = None 
 
+# ___________________________________
+# SUPABASE - AUTH
+# ___________________________________
+SUPABASE_URL = decouple.config('SUPABASE_URL')
+SUPABASE_ANON_KEY = decouple.config('SUPABASE_ANON_KEY')
+SUPABASE_JWT_SECRET = decouple.config('SUPABASE_JWT_SECRET')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -92,7 +98,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'rest_framework_simplejwt',
+    #'rest_framework_simplejwt',
     'drf_spectacular',
 
     'users',
@@ -184,6 +190,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ── JWT ───────────────────────────────────────
+"""
 from datetime import timedelta
 
 SIMPLE_JWT = {
@@ -197,7 +204,7 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }
-
+"""
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -247,8 +254,9 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'users.authentication.SupabaseJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication'
+        #'rest_framework_simplejwt.authentication.JWTAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',

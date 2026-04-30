@@ -2,8 +2,8 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.tokens import RefreshToken
+#from rest_framework_simplejwt.views import TokenObtainPairView
+#from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 from .services.user_service import UserService
 
@@ -26,14 +26,14 @@ from common.permissions import IsOwnerOrAdmin, IsAppAdmin
 # ──────────────────────────────────────────────
 # AUTH
 # ──────────────────────────────────────────────
-
+"""
 class RegisterView(generics.CreateAPIView):
-    """
+    
     POST /api/auth/register/
     Registro público. No requiere autenticación.
     Devuelve tokens JWT directamente tras el registro
     para evitar que el cliente tenga que hacer un segundo request.
-    """
+    
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
 
@@ -52,14 +52,15 @@ class RegisterView(generics.CreateAPIView):
             }
         }, status=status.HTTP_201_CREATED)
 
-
+"""
+"""
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """
+    
     POST /api/auth/login/
     Login estándar de simplejwt. Extiende la respuesta
     añadiendo datos básicos del usuario al payload de respuesta.
     Uso de email como campo de autenticación.
-    """
+    
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
@@ -81,7 +82,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                     'full_name': user.full_name,
                 }
         return response
-
+"""
 
 # ──────────────────────────────────────────────
 # USER PROFILE

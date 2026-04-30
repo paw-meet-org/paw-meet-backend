@@ -5,19 +5,19 @@
 
 <p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
 
-<p><strong>{{ attendee.get_full_name|default:attendee.email }}</strong> ha cancelado su asistencia a tu encuentro:</p>
+<p><strong>{{ attendance.user.get_full_name|default:attendance.user.email }}</strong> ha cancelado su asistencia a tu encuentro:</p>
 
 <div class="meeting-card" style="border-left-color: #e67e22;">
     <div class="meeting-title">{{ meeting.titulo }}</div>
-    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting.fecha|date:"l d \d\e F \d\e Y" }}</div>
-    <div class="meeting-detail">⏰ <strong>Hora:</strong> {{ meeting.hora_inicio|time:"H:i" }} - {{ meeting.hora_fin|time:"H:i" }}</div>
+    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting.date:"l d \d\e F \d\e Y" }}</div>
+    <div class="meeting-detail">⏰ <strong>Hora:</strong> {{ meeting.start_time:"H:i" }} - {{ meeting.end_time:"H:i" }}</div>
 </div>
 
 <div style="background: #ebf5fb; border: 1px solid #aed6f1; border-radius: 5px; padding: 15px; margin: 20px 0;">
     <p style="margin: 0; color: #21618c;">
         <strong>📊 Estado actual del encuentro:</strong><br>
         Plazas ocupadas: {{ meeting.attendees.confirmadas.count }}<br>
-        Plazas disponibles: {{ meeting.available_spots }} de {{ meeting.max_participantes }}
+        Plazas disponibles: {{ meeting.available_spots }} de {{ meeting.max_participants }}
     </p>
 </div>
 

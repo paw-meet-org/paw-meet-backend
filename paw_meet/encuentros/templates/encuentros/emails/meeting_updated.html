@@ -1,0 +1,77 @@
+{% extends "encuentros/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #8e44ad; margin-bottom: 20px;">📝 Encuentro actualizado</h2>
+
+<p>Hola <strong>{{ user.get_full_name|default:user.email }}</strong>,</p>
+
+<p>El organizador <strong>{{ meeting.creador.get_full_name|default:meeting.creador.email }}</strong> ha actualizado los detalles del encuentro al que asistes:</p>
+
+<div class="meeting-card" style="border-left-color: #8e44ad;">
+    <div class="meeting-title">{{ meeting.titulo }}</div>
+    <div class="meeting-detail">
+        <span class="icon">📅</span> 
+        <strong>Fecha:</strong> {{ meeting.fecha|date:"l d \d\e F \d\e Y" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">⏰</span> 
+        <strong>Hora:</strong> {{ meeting.hora_inicio|time:"H:i" }} - {{ meeting.hora_fin|time:"H:i" }}
+    </div>
+    <div class="meeting-detail">
+        <span class="icon">📍</span> 
+        <strong>Lugar:</strong> {{ meeting.ubicacion }}, {{ meeting.ciudad.nombre }}
+    </div>
+    {% if meeting.descripcion %}
+    <div class="meeting-detail">
+        <span class="icon">📋</span> 
+        <strong>Descripción:</strong> {{ meeting.descripcion|truncatechars:150 }}
+    </div>
+    {% endif %}
+</div>
+
+{% if changed_fields %}
+<div style="background: #f4ecf7; border: 1px solid #d2b4de; border-radius: 8px; padding: 18px; margin: 20px 0;">
+    <p style="margin: 0 0 12px 0; color: #6c3483; font-weight: 600;">
+        🔄 <strong>Detalles modificados:</strong>
+    </p>
+    <ul style="margin: 0; padding-left: 20px; color: #4a235a; line-height: 1.8;">
+        {% for field in changed_fields %}
+        <li style="margin-bottom: 5px;">{{ field }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div style="background: #eaf2f8; border: 1px solid #aed6f1; border-radius: 8px; padding: 18px; margin: 20px 0;">
+    <p style="margin: 0 0 8px 0; color: #21618c;">
+        <strong>ℹ️ Tu plaza sigue confirmada</strong>
+    </p>
+    <p style="margin: 0; color: #21618c;">
+        No necesitas hacer nada. Si por los nuevos cambios no puedes asistir, 
+        por favor cancela tu plaza para que otro usuario pueda aprovecharla.
+    </p>
+</div>
+
+<div style="display: flex; gap: 12px; margin: 25px 0; flex-wrap: wrap;">
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}" class="button" style="background: #8e44ad; margin: 0;">
+        🔍 Ver encuentro actualizado
+    </a>
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}/cancelar-asistencia" 
+       style="display: inline-block; background: #e74c3c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+        ❌ Cancelar asistencia
+    </a>
+</div>
+
+<p style="color: #7f8c8d; font-size: 14px; margin-top: 15px;">
+    <span class="icon">💬</span> 
+    ¿Tienes dudas sobre los cambios? Contacta con el organizador a través del 
+    <a href="{{ site_url }}/encuentros/{{ meeting.id }}/chat" style="color: #667eea;">chat del encuentro</a>.
+</p>
+
+<hr style="border: none; border-top: 1px solid #e9ecef; margin: 25px 0;">
+
+<p style="color: #95a5a6; font-size: 12px; text-align: center;">
+    Recibes este email porque tienes una plaza confirmada en este encuentro.<br>
+    <a href="{{ site_url }}/perfil/configuracion" style="color: #95a5a6;">Configurar preferencias de notificaciones</a>
+</p>
+{% endblock %}

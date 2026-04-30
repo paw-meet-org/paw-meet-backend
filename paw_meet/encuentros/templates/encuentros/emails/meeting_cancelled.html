@@ -5,11 +5,11 @@
 
 <p>Hola,</p>
 
-<p>Lamentamos informarte que el encuentro <strong>"{{ meeting_titulo }}"</strong> ha sido cancelado por el organizador.</p>
+<p>Lamentamos informarte que el encuentro <strong>"{{ meeting_title }}"</strong> ha sido cancelado por el organizador.</p>
 
 <div class="meeting-card" style="border-left-color: #c0392b; opacity: 0.8;">
     <div class="meeting-title">{{ meeting_titulo }}</div>
-    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting_fecha|date:"l d \d\e F \d\e Y" }}</div>
+    <div class="meeting-detail">📅 <strong>Fecha:</strong> {{ meeting.date:"l d \d\e F \d\e Y" }}</div>
 </div>
 
 <div style="background: #fadbd8; border: 1px solid #f1948a; border-radius: 5px; padding: 15px; margin: 20px 0;">

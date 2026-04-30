@@ -5,6 +5,7 @@ from .models import Meeting, Attendance, City, MeetingStatus
 from users.models import Pet
 from users.serializers.mascota_serializer import PetSerializer
 from django.conf import settings
+from datetime import datetime
 
 
 class CitySerializer(serializers.ModelSerializer):
@@ -189,11 +190,21 @@ class MeetingDetailSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         """Validaciones adicionales."""
+        date = data.get('date')        
+        start_time = data.get('start_time')
         # Validar hora de fin > hora de inicio
         if data.get('start_time') and data.get('end_time'):
             if data['start_time'] >= data['end_time']:
                 raise serializers.ValidationError({
                     'end_time': 'La hora de fin debe ser posterior a la hora de inicio.'
+                })
+        if date and start_time:
+            start_datetime = timezone.make_aware(
+                datetime.combine(date, start_time)
+            )
+            if start_datetime < timezone.now():
+                raise serializers.ValidationError({
+                    'start_time': 'La hora de inicio debe ser igual o posterior a la hora actual'
                 })
         
         # Validar que las mascotas pertenezcan al creador

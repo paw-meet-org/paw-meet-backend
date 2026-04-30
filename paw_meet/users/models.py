@@ -56,6 +56,13 @@ class CustomUser(AbstractUser, BaseModel):
         help_text = "Teléfono de contacto opcional"
     )
 
+    supabase_uid = models.UUIDField(
+        unique=True,
+        null=True,      # null=True para no romper usuarios existentes
+        blank=True,
+        db_index=True,
+    )
+
     # Hacemos login por email en vez de por username.
     USERNAME_FIELD = 'email'
 

@@ -4,8 +4,8 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from .router import root_router
 
 from .views import (
-    RegisterView,
-    CustomTokenObtainPairView,
+    #RegisterView,
+    #CustomTokenObtainPairView,
     MeView,
     ChangePasswordView,
     UserPublicProfileView,
@@ -17,10 +17,10 @@ router.register(r'me/pets', PetViewSet, basename='pet')
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────
-    path('auth/register/',      RegisterView.as_view(),                name='auth-register'),
-    path('auth/login/',         CustomTokenObtainPairView.as_view(),   name='auth-login'),
-    path('auth/token/refresh/', TokenRefreshView.as_view(),            name='token-refresh'),
-    path('auth/token/verify/',  TokenVerifyView.as_view(),             name='token-verify'),
+    #path('auth/register/',      RegisterView.as_view(),                name='auth-register'),
+    #path('auth/login/',         CustomTokenObtainPairView.as_view(),   name='auth-login'),
+    #path('auth/token/refresh/', TokenRefreshView.as_view(),            name='token-refresh'),
+    #path('auth/token/verify/',  TokenVerifyView.as_view(),             name='token-verify'),
 
     # ── Perfil propio ─────────────────────────
     path('users/me/',                    MeView.as_view(),             name='user-me'),

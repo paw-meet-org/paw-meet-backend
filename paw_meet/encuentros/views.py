@@ -5,7 +5,7 @@ from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from .models import Meeting, Attendance, City
+from .models import Meeting, Attendance, City, MeetingStatus
 from .serializers import (
     MeetingListSerializer,
     MeetingDetailSerializer,

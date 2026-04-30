@@ -5,9 +5,41 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
 from typing import List, Dict, Any, Optional
+from django.apps import apps
 
 logger = get_task_logger(__name__)
 
+
+def resolve_context(context):
+    """
+    Resuelve automáticamente pares _id/_model en el contexto a objetos Django 
+
+    Conversión:
+        'user_id': 1, 'user_model': 'users.CustomUser'
+        -> 'user': <CustomUser id=1>
+    """
+    resolved = {}
+    model_keys = {k[:-6] for k in context if k.endswith('_model')}
+
+    for prefix in model_keys:
+        id_key = f"{prefix}_id"
+        model_key = f'{prefix}_model'
+
+        if id_key not in context:
+            logger.warning(f"resolved_context: se encontró {model_key} pero no {id_key} asociada")
+            continue
+
+        app_label, model = context[model_key].split('.')
+        model = apps.get_model(app_label, model)
+        resolved[prefix] = model.objects.get(id = context[id_key])
+
+    # Mantener los campos de contexto que no intersan
+    meta_keys = {k for k in context if k.endswith('_id') or k.endswith('_model')}
+    for k, v in context.items():
+        if k not in meta_keys:
+            resolved[k] = v
+    
+    return resolved
 
 @shared_task(
     name='meetings.tasks.send_email',
@@ -45,6 +77,11 @@ def send_email_task(
         return 0
     
     try:
+        # Mapear objetos de contexto a JSON serializable
+        resolved_context = resolve_context(context)
+        print(f"DEBUG: {resolved_context}")
+        context.update(resolved_context)
+
         # Añadir contexto común
         context.update({
             'site_name': 'PawMeet',
@@ -117,9 +154,12 @@ def send_attendance_confirmation_task(self, attendance_id: int) -> Dict[str, Any
     
     # Contexto para el asistente
     context = {
-        'user': attendance.user,
-        'meeting': attendance.meeting,
-        'attendance': attendance,
+        'user_id': attendance.user.id,
+        'user_model': 'users.CustomUser',
+        'meeting_id': attendance.meeting.id,
+        'meeting_model': 'encuentros.Meeting',
+        'attendance_id': attendance.id,
+        'attendance_model': 'encuentros.Attendance',
     }
     
     # Enviar al asistente
@@ -133,10 +173,12 @@ def send_attendance_confirmation_task(self, attendance_id: int) -> Dict[str, Any
     # Notificar al creador (si no es el mismo)
     if attendance.user != attendance.meeting.creator:
         context_creator = {
-            'user': attendance.meeting.creator,
-            'attendee': attendance.user,
-            'meeting': attendance.meeting,
-            'attendance': attendance,
+            'user_id': attendance.meeting.creator.id,
+            'user_model': 'users.CustomUser',
+            'attendee_id': attendance.user.id,
+            'attendee_model': 'users.CustomUser',
+            'meeting_id': attendance.meeting.id,
+            'meeting_model': 'encuentros.Meeting',
         }
         send_email_task.delay(
             subject=f"[PawMeet] Nuevo asistente en tu encuentro: {attendance.meeting.title}",
@@ -159,7 +201,7 @@ def send_attendance_cancellation_task(self, attendance_id: int, user_id: int, me
     Tarea para enviar email de cancelación de asistencia.
     Se pasan IDs en lugar de objetos para evitar problemas de serialización.
     """
-    from encuentros.models import Meeting
+    from encuentros.models import Meeting, Attendance
     from django.contrib.auth import get_user_model
     
     User = get_user_model()
@@ -167,19 +209,18 @@ def send_attendance_cancellation_task(self, attendance_id: int, user_id: int, me
     try:
         meeting = Meeting.objects.select_related('city', 'creator').get(id=meeting_id)
         user = User.objects.get(id=user_id)
+        attendance = Attendance.objects.select_related(
+            'meeting', 'meeting__city', 'meeting__creator', 'user'
+        ).prefetch_related('pets').get(id=attendance_id)
     except (Meeting.DoesNotExist, User.DoesNotExist) as e:
         logger.error(f"Error al obtener objetos para cancelación: {e}")
         return {'status': 'error', 'message': str(e)}
     
     context = {
-        'user_name': meeting.creator.get_full_name(),
-        'user_email': meeting.creator.email,
-        'meeting_title': meeting.title,
-        'meeting_date': meeting.date.isoformat(),
-        'meeting_start_time': meeting.start_time.strftime('%H:%M'),
-        'meeting_end_time': meeting.end_time.strftime('%H:%M'),
-        'meeting_location': meeting.location,
-        'meeting_city': meeting.city.name,
+        'user_id': meeting.creator.id,
+        'user_model': 'users.CustomUser',
+        'meeting_id': meeting.id,
+        'meeting_model': 'encuentros.Meeting',
     }
     
     # Email al usuario que cancela
@@ -193,9 +234,12 @@ def send_attendance_cancellation_task(self, attendance_id: int, user_id: int, me
     # Notificar al creador
     if user != meeting.creator:
         context_creator = {
-            'user': meeting.creator,
-            'attendee': user,
-            'meeting': meeting,
+            'user_id': meeting.creator.id,
+            'user_model': 'users.CustomUser',
+            'attendance_id': attendance.id,
+            'attendance_model': 'encuentros.Attendance',
+            'meeting_id': meeting.id,
+            'meeting_model': 'encuentros.Meeting'
         }
         send_email_task.delay(
             subject=f"[PawMeet] Un asistente ha cancelado: {meeting.title}",
@@ -282,8 +326,10 @@ def send_meeting_updated_task(self, meeting_id: int, changed_fields: List[str]) 
     notified = 0
     for attendance in attendees:
         context = {
-            'user': attendance.user,
-            'meeting': meeting,
+            'user_id': attendance.user.id,
+            'user_model': 'users.CustomUser',
+            'meeting_id': meeting.id,
+            'meeting_model': 'encuentros.Meeting',
             'changed_fields': changed_fields_es,
         }
         
@@ -316,6 +362,7 @@ def send_meeting_cancelled_task(self, meeting_id: int, meeting_title: str, creat
     context = {
         'meeting_title': meeting_title,
         'meeting_id': meeting_id,
+        'meeting_model': 'encuentros.Meeting',
     }
     
     # Notificar al creador
@@ -364,9 +411,12 @@ def send_meeting_reminder_task(self, attendance_id: int) -> Dict[str, Any]:
         return {'status': 'skipped', 'attendance_id': attendance_id}
     
     context = {
-        'user': attendance.user,
-        'meeting': attendance.meeting,
-        'attendance': attendance,
+        'user_id': attendance.user.id,
+        'user_model': 'users.CustomUser',
+        'meeting_id': attendance.meeting.id,
+        'meeting_model': 'encuentros.Meeting',
+        'attendance_id': attendance.id,
+        'attendance_model': 'encuentros.Attendance'
     }
     
     send_email_task.delay(
@@ -435,7 +485,6 @@ def update_meeting_statuses_task(self) -> Dict[str, Any]:
     
     # Actualizar a ONGOING
     started = Meeting.objects.filter(
-        date=now.date(),
         start_time__lte=now.time(),
         end_time__gte=now.time(),
         status=MeetingStatus.SCHEDULED
@@ -445,9 +494,6 @@ def update_meeting_statuses_task(self) -> Dict[str, Any]:
     completed = Meeting.objects.filter(
         status__in=[MeetingStatus.SCHEDULED, MeetingStatus.ONGOING]
     ).exclude(
-        date__gt=now.date()
-    ).exclude(
-        date=now.date(),
         end_time__gt=now.time()
     ).update(status=MeetingStatus.COMPLETED)
     
