@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_gis.serializers import GeoFeatureModelListSerializer
 from django.utils import timezone
 from django.db import transaction
 from .models import Meeting, Attendance, City, MeetingStatus
@@ -14,6 +15,20 @@ class CitySerializer(serializers.ModelSerializer):
     class Meta:
         model = City
         fields = ['id', 'name', 'province']
+
+class NearbySerializer(GeoFeatureModelListSerializer):
+    """
+    Serializer para controlar los puntos espaciales de los encuentros.    
+    """
+    class Meta:
+        model = Meeting
+        geo_field = "location_point"
+        fields = [
+            'id', 'title', 'description', 'date', 'start_time', 'end_time',
+            'location', 'city', 'city_name', 'creator', 'creator_name',
+            'max_participants', 'confirmed_attendees', 'available_spots',
+            'status', 'is_attending', 'created_at'
+        ]
 
 
 class MeetingListSerializer(serializers.ModelSerializer):

@@ -3,6 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D # Distancia
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Meeting, Attendance, City, MeetingStatus
@@ -10,7 +13,8 @@ from .serializers import (
     MeetingListSerializer,
     MeetingDetailSerializer,
     AttendanceSerializer,
-    CitySerializer
+    CitySerializer,
+    NearbySerializer
 )
 from .notifications import MeetingNotificationService
 from . import tasks
@@ -275,21 +279,38 @@ class MeetingViewSet(viewsets.ModelViewSet):
         Endpoint para encuentros cercanos (requiere lat/lng).
         GET /api/meetings/nearby/?lat=40.416775&lng=-3.703790&radius=5
         """
-        lat = request.query_params.get('lat')
-        lng = request.query_params.get('lng')
-        radius = float(request.query_params.get('radius', 5))
+
+        lat_str = request.query_params.get('lat')
+        lng_str = request.query_params.get('lng')
+        radius_str = float(request.query_params.get('radius', 5))
         
-        if not lat or not lng:
+        if not lat and not lng:
             return Response(
                 {'error': 'Se requieren parámetros lat y lng.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Aquí iría la lógica de búsqueda geoespacial con GeoDjango
-        # Por ahora, devolvemos una respuesta indicando que no está implementado
+        try:
+            lat = float(lat_str)
+            lng = float(lng_str)
+            radius = float(radius_str)
+        except ValueError:
+            return Response(
+                {'error': 'Los parámetros lat, lng y radius deben ser números válidos.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user_coords = Point(lng, lat, srid=4326)
+        
+        encuentros_cercanos = Meeting.objects.filter(
+            location_point__distance_lte=(user_coords, D(km=radius))
+        )
+
+        serializer = NearbySerializer(encuentros_cercanos, many=True)
+        
         return Response(
-            {'message': 'Funcionalidad en desarrollo', 'lat': lat, 'lng': lng, 'radius': radius},
-            status=status.HTTP_501_NOT_IMPLEMENTED
+            serializer.data,
+            status=status.HTTP_200_OK
         )
 
 

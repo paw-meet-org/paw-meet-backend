@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 
     'rest_framework',
     #'rest_framework_simplejwt',
@@ -107,7 +108,7 @@ INSTALLED_APPS = [
     'backend',
     'django_celery_results',
     'django_celery_beat',
-    'django_filters',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -152,7 +153,7 @@ WSGI_APPLICATION = 'paw_meet.wsgi.application'
 if decouple.config('DB_TYPE', default="sqlite") == 'postgres':
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': decouple.config('POSTGRES_DB', default='postgres'),
             'USER': decouple.config('POSTGRES_USER', default='postgres'),
             'PASSWORD': decouple.config('POSTGRES_PASSWORD', default='postgres'),

@@ -1,8 +1,10 @@
+from django.contrib.gis.db import models as gis_models
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.contrib.gis.geos import Point
 
 
 class MeetingStatus(models.TextChoices):
@@ -69,6 +71,13 @@ class Meeting(models.Model):
         blank=True,
         help_text="Longitud para geolocalización"
     )
+
+    location_point = gis_models.PointField(
+        geography = True,
+        null = True, 
+        blank = True,
+        help_text = "Punto espacial generado automáticamente"
+    )
     
     # Fechas
     date = models.DateField(help_text="Fecha del encuentro")
@@ -103,6 +112,18 @@ class Meeting(models.Model):
     def __str__(self):
         return f"{self.title} - {self.date} {self.start_time}"
     
+    def save(self, *args, **kwargs):
+        """
+        Sobreescribo el método create para sincronizar los valores de latitud y longitud 
+        con el punto geoespacial
+        """
+        if self.location_lat and self.location_lng:
+            self.location_point = Point(float(self.location_lng), float(self.location_lat))
+        else:
+            self.location_point = None
+        
+        super().save(*args, **kwargs)
+
     def clean(self):
         """Validaciones a nivel de modelo."""
         # Validar que la fecha no sea pasada

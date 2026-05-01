@@ -1,7 +1,7 @@
 services:
   postgres:
     container_name: pawmeet_db
-    image: postgres:18
+    image: postgis/postgis
     restart: unless-stopped
     ports:
       - "5432:5432"

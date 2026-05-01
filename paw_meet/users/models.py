@@ -1,6 +1,8 @@
+from django.contrib.gis.db import models as gis_models
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator, ProhibitNullCharactersValidator
+from django.contrib.gis.geos import Point
 
 from common.models import BaseModel
 from .managers import CustomUserManager
@@ -56,6 +58,28 @@ class CustomUser(AbstractUser, BaseModel):
         help_text = "Teléfono de contacto opcional"
     )
 
+    location_lat = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Latitud para geolocalización"
+    )
+    location_lng = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Longitud para geolocalización"
+    )
+
+    location_point = gis_models.PointField(
+        geography = True,
+        null = True, 
+        blank = True,
+        help_text = "Punto espacial generado automáticamente"
+    )
+
     supabase_uid = models.UUIDField(
         unique=True,
         null=True,      # null=True para no romper usuarios existentes
@@ -77,6 +101,18 @@ class CustomUser(AbstractUser, BaseModel):
 
     def __str__(self):
         return f"{self.email} ({self.get_role_display()})"
+    
+    def save(self, *args, **kwargs):
+        """
+        Sobreescribo el método create para sincronizar los valores de latitud y longitud 
+        con el punto geoespacial
+        """
+        if self.location_lat and self.location_lng:
+            self.location_point = Point(float(self.location_lng), float(self.location_lat))
+        else:
+            self.location_point = None
+        
+        super().save(*args, **kwargs)
     
     @property
     def is_app_admin(self) -> bool:
