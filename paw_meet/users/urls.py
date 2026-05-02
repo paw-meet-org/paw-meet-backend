@@ -35,8 +35,4 @@ urlpatterns = [
     # ── Tipo Mascotas (router) ─────────────────────
     path('', include(root_router.urls)),
 
-    # ── Foros ─────────────────────
-    path('api/', include('foros.urls'))
-
-
 ]

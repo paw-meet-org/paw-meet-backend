@@ -1,29 +1,29 @@
 services:
-  postgres:
-    container_name: pawmeet_db
-    image: postgis/postgis
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=pawmeet_db
-    volumes:
-      - postgres_data:/var/lib/postgresql
+  # postgres:
+  #   container_name: pawmeet_db
+  #   image: postgis/postgis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_USER=admin
+  #     - POSTGRES_PASSWORD=admin
+  #     - POSTGRES_DB=pawmeet_db
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: unless-stopped
-    ports:
-      - "8081:80"
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8081:80"
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=admin@example.com
+  #     - PGADMIN_DEFAULT_PASSWORD=admin
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #   depends_on:
+  #     - postgres
 
   pawmeet:
     image: mendo1/paw_meet_backend:1.0
@@ -66,11 +66,10 @@ services:
       - ./paw_meet:/app
     environment:
       - DJANGO_SETTINGS_MODULE=paw_meet.settings
-      - CELERY_BROKER_URL=amqp://paw_meet:paw_meet@rabbitmq:5672//
+      - CELERY_BROKER_URL=${LAVINMQ}
     working_dir: /app
     depends_on:
-      - postgres
-      - rabbitmq
+      #- postgres
       - worker
       
   worker:
@@ -84,11 +83,10 @@ services:
       - ./paw_meet:/app
     environment:
       - DJANGO_SETTINGS_MODULE=paw_meet.settings
-      - CELERY_BROKER_URL=amqp://paw_meet:paw_meet@rabbitmq:5672//
+      - CELERY_BROKER_URL=${LAVINMQ}
     working_dir: /app 
-    depends_on:
-      - postgres
-      - rabbitmq
+    #depends_on:
+      #- postgres
 
   pawmeet_develop:
     build: .
@@ -98,8 +96,8 @@ services:
       - ./paw_meet:/app/paw_meet
     env_file:
       - ./paw_meet/.env
-    depends_on:
-      - postgres
+    #depends_on:
+      #- postgres
     ports:
       - "8004:8000"
     profiles:
@@ -114,8 +112,8 @@ configs:
     content: "[rabbitmq_management]."
 
 volumes:
-  postgres_data:
-  pgadmin_data:
+  #postgres_data:
+  #pgadmin_data:
   rabbitmq-lib:
     driver: local
   rabbitmq-log:

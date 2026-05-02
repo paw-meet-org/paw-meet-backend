@@ -23,7 +23,7 @@ import sys
 # CELERY
 # ___________________________________
 
-CELERY_BROKER_URL = 'amqp://paw_meet:paw_meet@rabbitmq:5672//'
+CELERY_BROKER_URL = decouple.config('LAVINMQ')
 
 CELERY_CACHE_BACKEND = 'default'
 

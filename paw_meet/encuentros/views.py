@@ -7,6 +7,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D # Distancia
 from rest_framework.filters import SearchFilter, OrderingFilter
+from foros.models import Foro
 
 from .models import Meeting, Attendance, City, MeetingStatus
 from .serializers import (
@@ -81,6 +82,16 @@ class MeetingViewSet(viewsets.ModelViewSet):
             transaction.on_commit(
                 lambda: MeetingNotificationService.send_meeting_created(meeting)
             )
+
+        # Crear un foro asociado al encuentro
+        foro = Foro(
+            usuario = self.request.user,
+            tipo_foro = "Quedada",
+            titulo = f"Quedada {meeting.title}",
+            encuentro = meeting   
+        )
+
+        Foro.save(foro)
     
     def perform_update(self, serializer):
         """Actualiza el encuentro y notifica cambios a los asistentes."""

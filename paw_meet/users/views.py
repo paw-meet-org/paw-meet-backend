@@ -221,5 +221,6 @@ class PetTypeViewSet(viewsets.ModelViewSet):
     DELETE /api/pettypes/<id>/     → eliminar
     """
     serializer_class = PetTypeSerializer
-    permission_classes = [IsAuthenticated, IsAppAdmin]
+    #permission_classes = [IsAuthenticated, IsAppAdmin]
+    permission_classes = [IsAuthenticated]
 

@@ -98,7 +98,7 @@ class ForoListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Foro
-        fields = ['id', 'titulo', 'tipo_foro', 'usuario', 'total_publicaciones']
+        fields = ['id', 'titulo', 'tipo_foro', 'usuario', 'total_publicaciones', 'encuentro']
         
     def get_total_publicaciones(self, obj):
         # Cuenta cuántas publicaciones están en este foro
@@ -117,7 +117,7 @@ class ForoDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Foro
-        fields = ['id', 'titulo', 'tipo_foro', 'usuario', 'publicaciones']
+        fields = ['id', 'titulo', 'tipo_foro', 'usuario', 'publicaciones', 'encuentro']
         read_only_fields = ['id']
 
     def create(self, validated_data):

@@ -6,7 +6,6 @@ from .views import (
     CategoriaPublicacionViewSet
 )
 
-# El router mapea automáticamente las acciones del ViewSet a URLs
 router = DefaultRouter()
 router.register(r'foros', ForoViewSet, basename='foro')
 router.register(r'publicaciones', PublicacionViewSet, basename='publicacion')

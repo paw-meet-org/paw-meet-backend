@@ -16,6 +16,8 @@ class Foro(models.Model):
     tipo_foro = models.CharField(max_length=100)
     titulo = models.CharField(max_length=200)
 
+    encuentro = models.OneToOneField('encuentros.Meeting', null = True, blank = True, on_delete = models.CASCADE)
+
     def __str__(self):
         return f"{self.titulo} ({self.tipo_foro})"
 
