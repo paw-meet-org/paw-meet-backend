@@ -46,11 +46,11 @@ es_formats.DATETIME_INPUT_FORMATS = ["%d/%m/%Y %H:%M",]
 # ___________________________________
 EMAIL_BACKEND = 'backend.email.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = decouple.config('EMAIL_PORT')
-EMAIL_USE_TLS = True
+EMAIL_PORT = decouple.config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = decouple.config('EMAIL_TLS', default=False, cast=bool)
+EMAIL_USE_SSL = decouple.config('EMAIL_SSL', default=True, cast=bool)
 EMAIL_HOST_USER = decouple.config('EMAIL_USER')
 EMAIL_HOST_PASSWORD = decouple.config('EMAIL_PASSWORD')
-EMAIL_USE_SSL = False
 EMAIL_SSL_CERTFILE = None
 EMAIL_SSL_KEYFILE = None 
 
