@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_filters',
     'storages',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -304,7 +305,6 @@ if 'test' in sys.argv:
 
 CSRF_TRUSTED_ORIGINS = decouple.config('CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1, http://localhost', cast=lambda v: [s.strip() for s in v.split(',')])
 CORS_ALLOWED_ORIGINS = decouple.config('CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1, http://localhost', cast=lambda v: [s.strip() for s in v.split(',')])
-CORS_ALLOW_ALL_ORIGINS = True
 
 LOGGING = {
     'version': 1,
