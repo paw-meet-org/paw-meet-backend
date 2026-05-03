@@ -32,18 +32,6 @@ CELERY_ACCEPT_CONTENT   = ['json']
 CELERY_TASK_SERIALIZER  = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-# Configuración programada de las tareas a ejecutar por CELERY
-CELERY_BEAT_SCHEDULE = {
-    'update-meeting-statuses': {
-        'task': 'encuentros.tasks.update_meeting_statuses',
-        'schedule': crontab(minute='*/15'),  # Cada 15 minutos
-    },
-    'schedule-meeting-reminders': {
-        'task': 'encuentros.tasks.schedule_meeting_reminders',
-        'schedule': crontab(hour=10, minute=0),  # Todos los días a las 10:00
-    },
-}
-
 CELERY_TIMEZONE = 'Europe/Madrid'
 CELERY_ENABLE_UTC = True
 

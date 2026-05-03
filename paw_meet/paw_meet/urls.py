@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from django.conf import settings
 from rest_framework_simplejwt import views as jwt_views
+from .views import trigger_scheduled_tasks
 
 urlpatterns = [
     path('api/schema', SpectacularAPIView.as_view(), name = 'schema'),
@@ -29,7 +30,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
     path('api/social/', include('foros.urls')),
-    path('api/meetings/', include('encuentros.urls'))
+    path('api/meetings/', include('encuentros.urls')),
+    path('api/cron/hidden-tasks-992', trigger_scheduled_tasks, name='cron_trigger'),
 ]
 
 urlpatterns += [
