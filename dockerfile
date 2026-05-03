@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copio el código del proyecto
+# Copio el código del proyecto 
 COPY ./paw_meet/ /app/
 
 # Copioy doy permisos al script de inicio
