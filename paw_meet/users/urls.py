@@ -10,6 +10,7 @@ from .views import (
     ChangePasswordView,
     UserPublicProfileView,
     PetViewSet,
+    CreateUsersByAdmin
 )
 
 router = DefaultRouter()
@@ -34,5 +35,8 @@ urlpatterns = [
 
     # ── Tipo Mascotas (router) ─────────────────────
     path('', include(root_router.urls)),
+
+    # ── Admin ──────────
+    path('admin/create/', CreateUsersByAdmin.as_view(), name='admin-create')
 
 ]

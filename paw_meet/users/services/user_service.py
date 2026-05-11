@@ -1,7 +1,6 @@
 from django.db import transaction
 from ..models import CustomUser
 
-
 class UserService:
     """
     Capa de servicio para lógica de negocio relacionada con usuarios.
@@ -15,6 +14,7 @@ class UserService:
         email: str,
         username: str,
         password: str,
+        supabase_uid,
         first_name: str = '',
         last_name: str = '',
     ) -> CustomUser:
@@ -27,6 +27,7 @@ class UserService:
             first_name=first_name,
             last_name=last_name,
             role=CustomUser.Role.USER,
+            supabase_uid = supabase_uid,
             is_active=True,
         )
         user.set_password(password)  # hashea con PBKDF2 por defecto

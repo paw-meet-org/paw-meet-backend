@@ -6,6 +6,8 @@ from rest_framework.response import Response
 #from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 from .services.user_service import UserService
+import requests
+import decouple
 
 
 from .models import CustomUser, Pet
@@ -103,6 +105,65 @@ class MeView(generics.RetrieveUpdateAPIView):
         # Forzamos PATCH (partial=True) por defecto para UX más amigable
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
+
+@extend_schema(tags = ['admin'])
+class CreateUsersByAdmin(generics.CreateAPIView):
+    """
+    POST /api/admin/create/ -> Crea un nuevo usuario
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserRegistrationSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Obtengo el serializer
+        serializer = self.get_serializer(data = request.data)
+        serializer.is_valid() # Si es válido, puedo obtener su validated data
+        validated_data = serializer.validated_data
+
+        # Estructura de la petición a Supabase
+        url = f"{decouple.config('SUPABASE_SIGN_IN_URL')}"
+        print(url)
+        headers = {
+            "apikey": decouple.config('SUPABASE_ANON_KEY'),
+            "Authorization": f"Bearer {decouple.config('SUPABASE_SERVICE_ROLE_KEY')}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            'email': validated_data['email'],
+            'password': validated_data['password']
+        }
+
+        response = requests.post(
+            url = url,
+            headers = headers,
+            json = payload,
+            verify = False
+        )
+
+        supabase_data = response.json()
+        
+        if response.status_code >= 400:
+            return Response(
+                {
+                    'error': 'Error creando un usuario nuevo en Supabase',
+                    'details': supabase_data
+                }
+            )
+        print(supabase_data)
+        supabase_uid = supabase_data['id']
+
+        serializer.save(
+            supabase_uid = supabase_uid
+        )
+
+        return Response(
+            {
+                'message': 'Usuario creado correctamente',
+                'supabase_uid': supabase_uid
+            },
+            status = status.HTTP_201_CREATED
+        )
 
 
 class ChangePasswordView(generics.GenericAPIView):

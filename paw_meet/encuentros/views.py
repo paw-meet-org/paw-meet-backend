@@ -8,6 +8,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D # Distancia
 from rest_framework.filters import SearchFilter, OrderingFilter
 from foros.models import Foro
+from drf_spectacular.utils import extend_schema
 
 from .models import Meeting, Attendance, City, MeetingStatus
 from .serializers import (
@@ -20,8 +21,8 @@ from .serializers import (
 from .notifications import MeetingNotificationService
 from . import tasks
 
-
-class CityViewSet(viewsets.ReadOnlyModelViewSet):
+@extend_schema(tags=['cities'])
+class CityViewSet(viewsets.ModelViewSet):
     """
     ViewSet de solo lectura para Ciudades.
     """
