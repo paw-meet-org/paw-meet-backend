@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     'django_filters',
     'storages',
     'corsheaders',
+    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -279,7 +280,7 @@ SPECTACULAR_SETTINGS = {
 # Configuración para tests
 if 'test' in sys.argv:
     # Usar backend de email en memoria para pruebas
-    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
     
     # URL del frontend para pruebas
     FRONTEND_URL = 'http://localhost:3000'
@@ -290,6 +291,14 @@ if 'test' in sys.argv:
         'DEFAULT_THROTTLE_CLASSES': [],
         'DEFAULT_THROTTLE_RATES': {},
     }
+
+# Configuración correos con anymail
+EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+ANYMAIL = {
+    'RESEND_API_KEY' : decouple.config('RESEND_API_KEY')
+}
+
+DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'
 
 CSRF_TRUSTED_ORIGINS = decouple.config('CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1, http://localhost', cast=lambda v: [s.strip() for s in v.split(',')])
 CORS_ALLOWED_ORIGINS = decouple.config('CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1, http://localhost', cast=lambda v: [s.strip() for s in v.split(',')])

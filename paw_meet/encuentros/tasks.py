@@ -9,7 +9,6 @@ from django.apps import apps
 
 logger = get_task_logger(__name__)
 
-
 def resolve_context(context):
     """
     Resuelve automáticamente pares _id/_model en el contexto a objetos Django 
