@@ -293,7 +293,7 @@ if 'test' in sys.argv:
     }
 
 # Configuración correos con anymail
-EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
 ANYMAIL = {
     'RESEND_API_KEY' : decouple.config('RESEND_API_KEY')
 }
