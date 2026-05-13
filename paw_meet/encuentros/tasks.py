@@ -55,8 +55,7 @@ def send_email_task(
     subject: str,
     recipient_list: List[str],
     template_name: str,
-    context: Dict[str, Any],
-    from_email: Optional[str] = None
+    context: Dict[str, Any]
 ) -> int:
     """
     Tarea Celery para enviar emails con plantillas HTML de forma asíncrona.
@@ -66,7 +65,6 @@ def send_email_task(
         recipient_list: Lista de destinatarios
         template_name: Ruta de la plantilla (ej: 'encuentros/emails/attendance_confirmed.html')
         context: Diccionario con el contexto para la plantilla
-        from_email: Remitente (opcional)
     
     Returns:
         Número de emails enviados (1 si éxito, 0 si no hay destinatarios)
@@ -85,7 +83,6 @@ def send_email_task(
         context.update({
             'site_name': 'PawMeet',
             'site_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000'),
-            'support_email': settings.DEFAULT_FROM_EMAIL,
             'current_year': __import__('datetime').datetime.now().year,
         })
         
@@ -97,7 +94,6 @@ def send_email_task(
         email = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
-            from_email=from_email or settings.DEFAULT_FROM_EMAIL,
             to=recipient_list
         )
         email.attach_alternative(html_content, "text/html")
@@ -280,7 +276,6 @@ def send_meeting_created_task(self, meeting_id: int) -> Dict[str, Any]:
     
     send_email_task.delay(
         subject=f"[PawMeet] Has creado un nuevo encuentro: {meeting.title}",
-        from_email = settings.EMAIL_HOST_USER,
         recipient_list=[meeting.creator.email],
         template_name='encuentros/emails/meeting_created.html',
         context=context
