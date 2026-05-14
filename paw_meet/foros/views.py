@@ -1,5 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
+from common.pagination import StandardPagination
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Foro, Publicacion, CategoriaPublicacion
@@ -66,6 +68,18 @@ class ForoViewSet(viewsets.ModelViewSet):
 # ──────────────────────────────────────────────
 # PUBLICACIONES
 # ──────────────────────────────────────────────
+
+@extend_schema(tags = ['admin'])
+class ListTodasPublicaciones(ListModelMixin, viewsets.GenericViewSet):
+    """
+    GET /api/admin/social/publicaciones/list/ -> Lista todas las publicaciones del sistema
+    """
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    serializer_class = PublicacionDetailSerializer
+
+    def get_queryset(self):
+        return Publicacion.objects.all()
 
 @extend_schema(tags=['publicaciones'])
 class PublicacionViewSet(viewsets.ModelViewSet):

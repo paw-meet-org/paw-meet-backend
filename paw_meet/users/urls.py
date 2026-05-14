@@ -10,7 +10,9 @@ from .views import (
     ChangePasswordView,
     UserPublicProfileView,
     PetViewSet,
-    CreateUsersByAdmin
+    CreateUsersByAdmin,
+    ListUsersRegistered,
+    AdminUserDeleteViewSet
 )
 
 router = DefaultRouter()
@@ -37,6 +39,8 @@ urlpatterns = [
     path('', include(root_router.urls)),
 
     # ── Admin ──────────
-    path('admin/create/', CreateUsersByAdmin.as_view(), name='admin-create')
+    path('admin/create/', CreateUsersByAdmin.as_view(), name='admin-create'),
+    path('admin/users/list/', ListUsersRegistered.as_view(), name='admin-list-users'),
+    path('admin/users/delete/', AdminUserDeleteViewSet.as_view({'delete':'delete_by_email'}), name = 'admin-user-delete'),
 
 ]

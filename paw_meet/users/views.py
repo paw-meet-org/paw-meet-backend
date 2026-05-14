@@ -1,11 +1,11 @@
 from rest_framework import generics, status, viewsets
+from common.pagination import StandardPagination
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 #from rest_framework_simplejwt.views import TokenObtainPairView
 #from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema
-from .services.user_service import UserService
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 import requests
 import decouple
 
@@ -164,6 +164,85 @@ class CreateUsersByAdmin(generics.CreateAPIView):
             },
             status = status.HTTP_201_CREATED
         )
+    
+@extend_schema(tags = ['admin'])
+class ListUsersRegistered(generics.ListAPIView):
+    """
+    GET /api/admin/users/list -> Lista todos los usuarios almacenados en el sistema, paginados de 25 en 25
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        return CustomUser.objects.all()
+    
+def delete_supabase_user(supabase_uid: str) -> tuple[bool, str]:
+    """
+    Elimina un usuario de Supabase Auth via Admin API REST.
+    Retorna (success: bool, error_message: str)
+    """
+    url = f"{decouple.config('SUPABASE_URL')}/auth/v1/admin/users/{supabase_uid}"
+    headers = {
+        "apikey": decouple.config('SUPABASE_SERVICE_ROLE_KEY'),
+        "Authorization": f"Bearer {decouple.config('SUPABASE_SERVICE_ROLE_KEY')}",
+    }
+
+    response = requests.delete(url, headers=headers)
+
+    if response.status_code in (200, 204):
+        return True, ""
+    return False, response.text
+    
+@extend_schema(tags=["admin"])
+class AdminUserDeleteViewSet(viewsets.GenericViewSet):
+
+    @extend_schema(
+        summary="Elimina un usuario por email",
+        parameters=[
+            OpenApiParameter(
+                name="email",
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description="Email del usuario a eliminar",
+            )
+        ],
+        responses={204: None},
+    )
+    @action(detail=False, methods=["delete"], url_path="delete")
+    def delete_by_email(self, request):
+        email = request.query_params.get("email")
+
+        if not email:
+            return Response(
+                {"detail": "El parámetro 'email' es requerido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 1. Buscar usuario en Django
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"detail": f"No existe ningún usuario con email '{email}'."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        supabase_uid = user.supabase_uid  # ajusta al campo que almacena el UUID de Supabase
+
+        # 2. Eliminar en Supabase primero
+        success, error = delete_supabase_user(supabase_uid)
+        if not success:
+            return Response(
+                {"detail": "Error al eliminar el usuario en Supabase.", "error": error},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        # 3. Eliminar en Django solo si Supabase tuvo éxito
+        user.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ChangePasswordView(generics.GenericAPIView):

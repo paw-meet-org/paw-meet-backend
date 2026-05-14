@@ -1,4 +1,6 @@
 from rest_framework import viewsets, permissions, status
+from common.pagination import StandardPagination
+from rest_framework.mixins import ListModelMixin
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
@@ -9,6 +11,7 @@ from django.contrib.gis.measure import D # Distancia
 from rest_framework.filters import SearchFilter, OrderingFilter
 from foros.models import Foro
 from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Meeting, Attendance, City, MeetingStatus
 from .serializers import (
@@ -20,6 +23,17 @@ from .serializers import (
 )
 from .notifications import MeetingNotificationService
 from . import tasks
+
+@extend_schema(tags = ['admin'])
+class ListTodosEncuentros(ListModelMixin, viewsets.GenericViewSet):
+    """
+    GET /api/admin/encuentros/list/ -> Lista todos los encuentros registrados en el sistema
+    """
+    serializer_class = MeetingDetailSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    def get_queryset(self):
+        return Meeting.objects.all()
 
 @extend_schema(tags=['cities'])
 class CityViewSet(viewsets.ModelViewSet):

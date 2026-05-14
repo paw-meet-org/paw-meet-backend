@@ -29,8 +29,8 @@ urlpatterns = [
     path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
-    path('api/social/', include('foros.urls')),
-    path('api/meetings/', include('encuentros.urls')),
+    path('api/', include('foros.urls')),
+    path('api/', include('encuentros.urls')),
     path('api/cron/hidden-tasks-992', trigger_scheduled_tasks, name='cron_trigger'),
 ]
 
