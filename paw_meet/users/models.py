@@ -88,6 +88,10 @@ class CustomUser(AbstractUser, BaseModel):
         """
         return self.role == self.Role.ADMIN
     
+    @is_app_admin.setter
+    def is_app_admin(self, value):
+        self.role = self.Role.ADMIN if value else self.Role.USER
+    
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip() or self.username

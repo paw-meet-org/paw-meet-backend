@@ -123,3 +123,5 @@ class ChangePasswordSerializer(serializers.Serializer):
         except DjangoValidationError as e:
             raise serializers.ValidationError({'new_password': list(e.messages)})
         return attrs
+class ClaimAdminResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField(read_only=True)

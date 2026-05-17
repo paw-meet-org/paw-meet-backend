@@ -61,6 +61,15 @@ SUPABASE_URL = decouple.config('SUPABASE_URL')
 SUPABASE_ANON_KEY = decouple.config('SUPABASE_ANON_KEY')
 SUPABASE_JWT_SECRET = decouple.config('SUPABASE_JWT_SECRET')
 
+# ___________________________________
+# ADMIN EMAILS
+# ___________________________________
+ADMIN_EMAILS = [
+    email.strip().lower()
+    for email in decouple.config('ADMIN_EMAILS', "").split(",")
+    if email.strip()
+]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -3,8 +3,8 @@ from common.pagination import StandardPagination
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-#from rest_framework_simplejwt.views import TokenObtainPairView
-#from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 import requests
 import decouple
@@ -16,6 +16,7 @@ from .serializers.user_serializer import (
     UserProfileSerializer,
     UserPublicSerializer,
     ChangePasswordSerializer,
+    ClaimAdminResponseSerializer
 )
 from .serializers.mascota_serializer import (
     PetSerializer, 
@@ -105,6 +106,45 @@ class MeView(generics.RetrieveUpdateAPIView):
         # Forzamos PATCH (partial=True) por defecto para UX más amigable
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
+
+@extend_schema(tags=['admin'])
+class LoginAdminUser(APIView):
+    """
+    POST /api/admin/login -> Loguea a un nuevo admin en el sistema
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=None,
+        responses={
+            200: ClaimAdminResponseSerializer,
+            403: ClaimAdminResponseSerializer,
+        }
+    )
+    def post(self, request):
+        user = request.user 
+        email = user.email.lower()
+
+        if email not in settings.ADMIN_EMAILS:
+            return Response(
+                {"detail": "No tienes permiso para reclamar el rol de administrador."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if user.is_app_admin:
+            return Response(
+                {"detail": "Ya eres administrador."},
+                status=status.HTTP_200_OK,
+            )
+
+        user.is_app_admin = True
+        user.save(update_fields=["role"])
+
+        return Response(
+            {"detail": "Rol de administrador asignado correctamente."},
+            status=status.HTTP_200_OK,
+        )
+
 
 @extend_schema(tags = ['admin'])
 class CreateUsersByAdmin(generics.CreateAPIView):
@@ -243,7 +283,6 @@ class AdminUserDeleteViewSet(viewsets.GenericViewSet):
         user.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class ChangePasswordView(generics.GenericAPIView):
     """
