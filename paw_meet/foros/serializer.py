@@ -72,6 +72,13 @@ class PublicacionDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'uploaded_at', 'likes']
 
+        extra_kwargs = {
+            'foto' : {
+                'required': False,
+                'allow_null': True
+            }
+        }
+
     def create(self, validated_data):
         """
         Al crear una publicación, asignamos automáticamente el usuario 
