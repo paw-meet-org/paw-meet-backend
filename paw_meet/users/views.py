@@ -10,7 +10,7 @@ import requests
 import decouple
 
 
-from .models import CustomUser, Pet
+from .models import CustomUser, Pet, PetType
 from .serializers.user_serializer import (
     UserRegistrationSerializer,
     UserProfileSerializer,
@@ -399,7 +399,17 @@ class PetTypeViewSet(viewsets.ModelViewSet):
     PATCH  /api/pettypes/<id>/     → editar parcial
     DELETE /api/pettypes/<id>/     → eliminar
     """
+    queryset = PetType.objects.all()
     serializer_class = PetTypeSerializer
-    #permission_classes = [IsAuthenticated, IsAppAdmin]
-    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        """
+        Permisos por acción.
+        """
 
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
