@@ -58,38 +58,24 @@ class CategoriaPublicacionViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=['foros'])
 class ForoViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet completo para Foros.
-    - Todos los usuarios autenticados pueden ver foros y crearlos.
-    - Solo el creador original (owner) o un admin pueden editar o eliminar un foro.
+    """ 
+    ViewSet completo para Foros. 
+    - Todos los usuarios autenticados pueden ver foros y crearlos. 
+    - Solo el creador original (owner) o un admin pueden editar o eliminar un foro. 
     """
     queryset = Foro.objects.all()
-    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['encuentro']
 
-    def get_serializer_class(self):
-        """
-        Usa el serializador ligero para la lista y el detallado (con publicaciones)
-        para ver un foro concreto o crearlo.
-        """
-        if self.action == 'list':
-            return ForoListSerializer
-        return ForoDetailSerializer
+    def get_permissions(self):
 
-    def perform_create(self, serializer):
-        """Inyecta el usuario creador automáticamente."""
-        serializer.save(usuario=self.request.user)
+        if self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+        else:
+            permission_classes = [IsAuthenticated]
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        Obtener un foro específico.
-        Lanza ResourceNotFoundError si no existe.
-        """
-        try:
-            return super().retrieve(request, *args, **kwargs)
-        except Foro.DoesNotExist:
-            raise ResourceNotFoundError(detail="El foro solicitado no existe.")
+        return [permission() for permission in permission_classes]
 
 
 # ──────────────────────────────────────────────
