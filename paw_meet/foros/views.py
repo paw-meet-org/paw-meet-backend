@@ -4,7 +4,8 @@ from common.pagination import StandardPagination
 from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-
+from rest_framework.exceptions import ValidationError
+from common.exceptions import BusinessLogicError, ResourceNotFoundError
 
 from .models import Foro, Publicacion, CategoriaPublicacion
 from .serializer import (
@@ -38,6 +39,18 @@ class CategoriaPublicacionViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, IsAppAdmin]
         return [permission() for permission in permission_classes]
 
+    def destroy(self, request, *args, **kwargs):
+        """Eliminar categoría con validación de que no tenga publicaciones asociadas."""
+        instance = self.get_object()
+        
+        # Validar regla de negocio: no eliminar categoría con publicaciones
+        if instance.publicaciones.exists():
+            raise BusinessLogicError(
+                detail="No se puede eliminar la categoría porque tiene publicaciones asociadas."
+            )
+        
+        return super().destroy(request, *args, **kwargs)
+
 
 # ──────────────────────────────────────────────
 # FOROS
@@ -67,6 +80,16 @@ class ForoViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Inyecta el usuario creador automáticamente."""
         serializer.save(usuario=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Obtener un foro específico.
+        Lanza ResourceNotFoundError si no existe.
+        """
+        try:
+            return super().retrieve(request, *args, **kwargs)
+        except Foro.DoesNotExist:
+            raise ResourceNotFoundError(detail="El foro solicitado no existe.")
 
 
 # ──────────────────────────────────────────────
@@ -118,3 +141,17 @@ class PublicacionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Inyecta el usuario autor automáticamente."""
         serializer.save(usuario=self.request.user)
+    def perform_create(self, serializer):
+        """Inyecta el usuario autor automáticamente."""
+        serializer.save(usuario=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Crear una nueva publicación con validaciones adicionales.
+        """
+        # Validar que el foro existe antes de crear
+        foro_id = request.data.get('foro')
+        if foro_id and not Foro.objects.filter(id=foro_id).exists():
+            raise ResourceNotFoundError(detail=f"El foro con id {foro_id} no existe.")
+        
+        return super().create(request, *args, **kwargs)

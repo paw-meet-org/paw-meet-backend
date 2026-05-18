@@ -104,11 +104,12 @@ class ForoListSerializer(serializers.ModelSerializer):
     usuario = UserPublicSerializer(read_only=True)
     # Podríamos añadir un campo calculado para saber cuántos posts tiene
     total_publicaciones = serializers.SerializerMethodField()
+    publicaciones = PublicacionListSerializer(many = True, read_only = True)
     encuentro = MeetingDetailSerializer(read_only = True)
 
     class Meta:
         model = Foro
-        fields = ['id', 'titulo', 'tipo_foro', 'usuario', 'total_publicaciones', 'encuentro']
+        fields = ['id', 'titulo', 'tipo_foro', 'usuario', 'publicaciones', 'total_publicaciones', 'encuentro']
         
     def get_total_publicaciones(self, obj):
         # Cuenta cuántas publicaciones están en este foro

@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from django.conf import settings
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from common.mixins import ExternalServiceMixin
+from rest_framework.exceptions import PermissionDenied, ValidationError, NotFound
+from common.exceptions import BusinessLogicError
 import requests
 import decouple
 
@@ -24,68 +27,6 @@ from .serializers.mascota_serializer import (
 )
 from common.permissions import IsOwnerOrAdmin, IsAppAdmin
 
-
-
-# ──────────────────────────────────────────────
-# AUTH
-# ──────────────────────────────────────────────
-"""
-class RegisterView(generics.CreateAPIView):
-    
-    POST /api/auth/register/
-    Registro público. No requiere autenticación.
-    Devuelve tokens JWT directamente tras el registro
-    para evitar que el cliente tenga que hacer un segundo request.
-    
-    permission_classes = [AllowAny]
-    serializer_class = UserRegistrationSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-
-        # Generar tokens JWT inmediatamente tras el registro
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'user': UserProfileSerializer(user).data,
-            'tokens': {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-        }, status=status.HTTP_201_CREATED)
-
-"""
-"""
-class CustomTokenObtainPairView(TokenObtainPairView):
-    
-    POST /api/auth/login/
-    Login estándar de simplejwt. Extiende la respuesta
-    añadiendo datos básicos del usuario al payload de respuesta.
-    Uso de email como campo de autenticación.
-    
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        if response.status_code == 200:
-            # Añadir info del usuario a la respuesta de login
-            from django.contrib.auth import authenticate
-            # simplejwt ya validó credenciales; recuperamos el usuario
-            # a través del serializer interno para enriquecer la respuesta
-            from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-            serializer = TokenObtainPairSerializer(data=request.data)
-            serializer.is_valid(raise_exception=False)
-            user = serializer.user if hasattr(serializer, 'user') else None
-
-            if user:
-                response.data['user'] = {
-                    'id': str(user.id),
-                    'email': user.email,
-                    'username': user.username,
-                    'role': user.role,
-                    'full_name': user.full_name,
-                }
-        return response
-"""
 
 # ──────────────────────────────────────────────
 # USER PROFILE
@@ -126,16 +67,10 @@ class LoginAdminUser(APIView):
         email = user.email.lower()
 
         if email not in settings.ADMIN_EMAILS:
-            return Response(
-                {"detail": "No tienes permiso para reclamar el rol de administrador."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            raise PermissionDenied("No tienes permiso para reclamar el rol de administrador.")
 
         if user.is_app_admin:
-            return Response(
-                {"detail": "Ya eres administrador."},
-                status=status.HTTP_200_OK,
-            )
+            raise BusinessLogicError("Ya eres administrador.")
 
         user.is_app_admin = True
         user.save(update_fields=["role"])
@@ -147,7 +82,7 @@ class LoginAdminUser(APIView):
 
 
 @extend_schema(tags = ['admin'])
-class CreateUsersByAdmin(generics.CreateAPIView):
+class CreateUsersByAdmin(ExternalServiceMixin, generics.CreateAPIView):
     """
     POST /api/admin/create/ -> Crea un nuevo usuario
     """
@@ -157,7 +92,7 @@ class CreateUsersByAdmin(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         # Obtengo el serializer
         serializer = self.get_serializer(data = request.data)
-        serializer.is_valid() # Si es válido, puedo obtener su validated data
+        serializer.is_valid(raise_exception = True) # Si es válido, puedo obtener su validated data
         validated_data = serializer.validated_data
 
         # Estructura de la petición a Supabase
@@ -174,11 +109,11 @@ class CreateUsersByAdmin(generics.CreateAPIView):
             'password': validated_data['password']
         }
 
-        response = requests.post(
-            url = url,
+        response = self.call_external(
+            requests.post,
+            url     = url,
             headers = headers,
-            json = payload,
-            verify = False
+            json    = {'email': validated_data['email'], 'password': validated_data['password']}
         )
 
         supabase_data = response.json()
@@ -217,25 +152,8 @@ class ListUsersRegistered(generics.ListAPIView):
     def get_queryset(self):
         return CustomUser.objects.all()
     
-def delete_supabase_user(supabase_uid: str) -> tuple[bool, str]:
-    """
-    Elimina un usuario de Supabase Auth via Admin API REST.
-    Retorna (success: bool, error_message: str)
-    """
-    url = f"{decouple.config('SUPABASE_URL')}/auth/v1/admin/users/{supabase_uid}"
-    headers = {
-        "apikey": decouple.config('SUPABASE_SERVICE_ROLE_KEY'),
-        "Authorization": f"Bearer {decouple.config('SUPABASE_SERVICE_ROLE_KEY')}",
-    }
-
-    response = requests.delete(url, headers=headers)
-
-    if response.status_code in (200, 204):
-        return True, ""
-    return False, response.text
-    
 @extend_schema(tags=["admin"])
-class AdminUserDeleteViewSet(viewsets.GenericViewSet):
+class AdminUserDeleteViewSet(ExternalServiceMixin, viewsets.GenericViewSet):
 
     @extend_schema(
         summary="Elimina un usuario por email",
@@ -255,29 +173,26 @@ class AdminUserDeleteViewSet(viewsets.GenericViewSet):
         email = request.query_params.get("email")
 
         if not email:
-            return Response(
-                {"detail": "El parámetro 'email' es requerido."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise ValidationError({"email": "El parámetro 'email' es requerido."})
 
         # 1. Buscar usuario en Django
-        try:
-            user = CustomUser.objects.get(email=email)
-        except CustomUser.DoesNotExist:
-            return Response(
-                {"detail": f"No existe ningún usuario con email '{email}'."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        
+        user = CustomUser.objects.get(email=email)
+        if not user:
+            raise NotFound(f"No existe ningún usuario con email '{email}'.")
 
         supabase_uid = user.supabase_uid  # ajusta al campo que almacena el UUID de Supabase
 
         # 2. Eliminar en Supabase primero
-        success, error = delete_supabase_user(supabase_uid)
-        if not success:
-            return Response(
-                {"detail": "Error al eliminar el usuario en Supabase.", "error": error},
-                status=status.HTTP_502_BAD_GATEWAY,
-            )
+        url = f"{decouple.config('SUPABASE_URL')}/auth/v1/admin/users/{user.supabase_uid}"
+        self.call_external(
+            requests.delete,
+            url     = url,
+            headers = {
+                "apikey"       : decouple.config('SUPABASE_SERVICE_ROLE_KEY'),
+                "Authorization": f"Bearer {decouple.config('SUPABASE_SERVICE_ROLE_KEY')}",
+            }
+        )
 
         # 3. Eliminar en Django solo si Supabase tuvo éxito
         user.delete()
@@ -303,10 +218,7 @@ class ChangePasswordView(generics.GenericAPIView):
                 new_password=serializer.validated_data['new_password'],
             )
         except ValueError as e:
-            return Response(
-                {'current_password': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError({"current_password": str(e)})
 
         return Response(
             {'detail': 'Contraseña actualizada correctamente.'},
@@ -352,10 +264,8 @@ class PetViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         qs = Pet.objects.select_related('owner')
-
         if not user.is_app_admin:
-            qs = qs.filter(owner=user)
-
+            qs = qs.filter(owner=user.id)
         if not self.request.query_params.get('include_inactive'):
             qs = qs.filter(is_active=True)
 
@@ -401,7 +311,7 @@ class PetTypeViewSet(viewsets.ModelViewSet):
     """
     queryset = PetType.objects.all()
     serializer_class = PetTypeSerializer
-    
+
     def get_permissions(self):
         """
         Permisos por acción.
