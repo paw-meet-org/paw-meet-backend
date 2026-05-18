@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Foro, Publicacion, CategoriaPublicacion
 from users.serializers.user_serializer import UserPublicSerializer  
+from encuentros.models import Meeting
+from encuentros.serializers import MeetingDetailSerializer
 
 # ──────────────────────────────────────────────
 # CATEGORY SERIALIZER
@@ -102,6 +104,7 @@ class ForoListSerializer(serializers.ModelSerializer):
     usuario = UserPublicSerializer(read_only=True)
     # Podríamos añadir un campo calculado para saber cuántos posts tiene
     total_publicaciones = serializers.SerializerMethodField()
+    encuentro = MeetingDetailSerializer(read_only = True)
 
     class Meta:
         model = Foro
@@ -121,6 +124,12 @@ class ForoDetailSerializer(serializers.ModelSerializer):
     usuario = UserPublicSerializer(read_only=True)
     # Anidamos el serializador de lista de publicaciones
     publicaciones = PublicacionListSerializer(many=True, read_only=True)
+
+    encuentro = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all(),
+        required = False,
+        allow_null = True
+    )
 
     class Meta:
         model = Foro

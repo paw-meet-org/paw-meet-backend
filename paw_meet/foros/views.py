@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from common.pagination import StandardPagination
 from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 from .models import Foro, Publicacion, CategoriaPublicacion
 from .serializer import (
@@ -50,6 +52,8 @@ class ForoViewSet(viewsets.ModelViewSet):
     """
     queryset = Foro.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['encuentro']
 
     def get_serializer_class(self):
         """
